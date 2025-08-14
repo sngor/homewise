@@ -13,7 +13,7 @@ export const getAppliances = async (): Promise<Appliance[]> => {
         return appliances;
     } catch (error) {
         console.error("Error fetching appliances: ", error);
-        return [];
+        throw error;
     }
 }
 
@@ -30,11 +30,11 @@ export const getApplianceById = async (id: string): Promise<Appliance | undefine
         }
     } catch (error) {
         console.error("Error fetching appliance by ID: ", error);
-        return undefined;
+        throw error;
     }
 }
 
-export const addAppliance = async (applianceData: Omit<Appliance, 'id'>, stickerFile?: { name: string, dataUrl: string }): Promise<Appliance> => {
+export const addAppliance = async (applianceData: Omit<Appliance, 'id' | 'stickerImageUrl'>, stickerFile?: { name: string, dataUrl: string }): Promise<Appliance> => {
     let finalStickerImageUrl: string | undefined = undefined;
 
     // If a sticker file is provided, upload it to Firebase Storage
@@ -44,11 +44,8 @@ export const addAppliance = async (applianceData: Omit<Appliance, 'id'>, sticker
         finalStickerImageUrl = await getDownloadURL(storageRef);
     }
     
-    // Create a new object to be saved, excluding the temporary stickerImageUrl from the form
-    const { stickerImageUrl, ...restOfApplianceData } = applianceData;
-    
     const dataToSave = {
-        ...restOfApplianceData,
+        ...applianceData,
         stickerImageUrl: finalStickerImageUrl || '', // Use the final URL or an empty string
     };
 

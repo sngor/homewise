@@ -48,13 +48,12 @@ const formSchema = z.object({
     required_error: "A purchase date is required.",
   }),
   maintenanceSchedule: z.string().min(2, "Maintenance schedule is required."),
-  stickerImageUrl: z.string().optional(),
 })
 
 type AddApplianceSheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onApplianceAdded: (appliance: Omit<Appliance, 'id'>, stickerFile: File | null) => void;
+  onApplianceAdded: (appliance: Omit<Appliance, 'id' | 'stickerImageUrl'>, stickerFile: File | null) => void;
 }
 
 export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddApplianceSheetProps) {
@@ -74,12 +73,10 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
   })
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const imageUrl = stickerFile ? URL.createObjectURL(stickerFile) : undefined;
     onApplianceAdded({
       ...values,
       type: values.type || 'other',
       purchaseDate: format(values.purchaseDate, "yyyy-MM-dd"),
-      stickerImageUrl: imageUrl,
     }, stickerFile);
     form.reset();
     setStickerFile(null);

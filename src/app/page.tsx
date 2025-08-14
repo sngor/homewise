@@ -52,9 +52,9 @@ export default function Home() {
         }
     }
     fetchAppliances();
-  }, [])
+  }, [toast])
 
-  const handleAddAppliance = async (newAppliance: Omit<Appliance, 'id'>, stickerFile: File | null) => {
+  const handleAddAppliance = async (newAppliance: Omit<Appliance, 'id' | 'stickerImageUrl'>, stickerFile: File | null) => {
     try {
       let stickerData: {name: string, dataUrl: string} | undefined = undefined;
       if (stickerFile) {
@@ -70,7 +70,6 @@ export default function Home() {
         }
       }
 
-      // The stickerImageUrl in `newAppliance` is a local blob URL, which we don't need to pass
       const addedAppliance = await addAppliance(newAppliance, stickerData);
 
       setAppliances(prev => [addedAppliance, ...prev]);
