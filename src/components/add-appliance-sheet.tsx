@@ -101,23 +101,20 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
         const photoDataUri = reader.result as string;
         try {
             const result = await getApplianceDetailsFromImage({ photoDataUri });
-            if (result) {
-                form.setValue("name", result.name);
-                form.setValue("type", result.type);
-                form.setValue("model", result.model);
-                form.setValue("serial", result.serial);
-                toast({
-                    title: "Details Extracted",
-                    description: "Appliance details have been filled in from the image.",
-                });
-            } else {
-                 throw new Error("Extraction returned no result.");
-            }
+            form.setValue("name", result.name);
+            form.setValue("type", result.type);
+            form.setValue("model", result.model);
+            form.setValue("serial", result.serial);
+            toast({
+                title: "Details Extracted",
+                description: "Appliance details have been filled in from the image.",
+            });
         } catch(e) {
+             const error = e instanceof Error ? e.message : "Could not extract details from the image. Please enter them manually.";
              toast({
                 variant: "destructive",
                 title: "Extraction Failed",
-                description: "Could not extract details from the image. Please enter them manually.",
+                description: error,
             });
         } finally {
             setIsExtracting(false);

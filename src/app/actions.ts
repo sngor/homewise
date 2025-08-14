@@ -8,16 +8,28 @@ export async function getCompatibleParts(input: FindCompatiblePartsInput): Promi
         return result.parts;
     } catch (error) {
         console.error("Error finding compatible parts:", error);
-        return [];
+        // Re-throw the error to be handled by the component
+        if (error instanceof Error) {
+            throw new Error(`AI part finder failed: ${error.message}`);
+        }
+        throw new Error('An unknown error occurred while finding compatible parts.');
     }
 }
 
-export async function getApplianceDetailsFromImage(input: ExtractApplianceDetailsInput): Promise<ExtractApplianceDetailsOutput | null> {
+export async function getApplianceDetailsFromImage(input: ExtractApplianceDetailsInput): Promise<ExtractApplianceDetailsOutput> {
     try {
+        // Ensure the flow call is awaited
         const result = await extractApplianceDetails(input);
+        if (!result) {
+            throw new Error("The AI flow returned no result.");
+        }
         return result;
     } catch (error) {
         console.error("Error extracting appliance details:", error);
-        return null;
+         // Re-throw the error to be handled by the component
+        if (error instanceof Error) {
+            throw new Error(`AI extraction failed: ${error.message}`);
+        }
+        throw new Error('An unknown error occurred during image extraction.');
     }
 }
