@@ -33,7 +33,7 @@ export const getApplianceById = async (id: string): Promise<Appliance | undefine
     }
 }
 
-export const addAppliance = async (applianceData: Omit<Appliance, 'id' | 'stickerImageUrl'>, stickerFile?: { name: string, dataUrl: string }): Promise<Appliance> => {
+export const addAppliance = async (applianceData: Omit<Appliance, 'id'>, stickerFile?: { name: string, dataUrl: string }): Promise<Appliance> => {
     let stickerImageUrl: string | undefined = undefined;
 
     if (stickerFile) {
@@ -42,8 +42,11 @@ export const addAppliance = async (applianceData: Omit<Appliance, 'id' | 'sticke
         stickerImageUrl = await getDownloadURL(storageRef);
     }
     
+    // We remove the temporary stickerImageUrl from the form before saving.
+    const { stickerImageUrl: tempUrl, ...restOfApplianceData } = applianceData;
+    
     const docRef = await addDoc(collection(db, APPLIANCES_COLLECTION), {
-        ...applianceData,
+        ...restOfApplianceData,
         stickerImageUrl: stickerImageUrl || '',
     });
 
@@ -53,19 +56,19 @@ export const addAppliance = async (applianceData: Omit<Appliance, 'id' | 'sticke
 export const deleteAppliance = async (id: string, stickerImageUrl?: string) => {
     try {
         if (stickerImageUrl) {
-            const imageRef = ref(storage, stickerImageUrl);
-            await deleteObject(imageRef).catch(error => {
-                // If the file doesn't exist, we can ignore the error
+            try {
+                const imageRef = ref(storage, stickerImageUrl);
+                await deleteObject(imageRef);
+            } catch (error: any) {
                 if (error.code !== 'storage/object-not-found') {
                     console.error("Error deleting image from storage: ", error);
-                    // We might still want to delete the firestore doc, so we don't rethrow
                 }
-            });
+            }
         }
         await deleteDoc(doc(db, APPLIANCES_COLLECTION, id));
     } catch (error) {
         console.error("Error deleting appliance: ", error);
-        throw error; // Re-throw to be handled by the caller
+        throw error;
     }
 };
 

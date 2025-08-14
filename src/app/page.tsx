@@ -60,9 +60,7 @@ export default function Home() {
         }
       }
 
-      // We remove stickerImageUrl from newAppliance because it's a local blob url
-      const { stickerImageUrl, ...applianceData } = newAppliance;
-      const addedAppliance = await addAppliance(applianceData, stickerData);
+      const addedAppliance = await addAppliance(newAppliance, stickerData);
 
       setAppliances(prev => [addedAppliance, ...prev]);
       setIsSheetOpen(false);
