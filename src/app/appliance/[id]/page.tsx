@@ -14,13 +14,16 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { MaintenanceCard } from '@/components/maintenance-card';
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const appliance = await getApplianceById(params.id);
-  if (!appliance) {
-    return { title: 'Appliance Not Found' };
-  }
-  return { title: `${appliance.name} Details` };
-}
+// This is a server component, so we can fetch data directly.
+// However, since we are using local state for now, we'll fetch on the client
+// in a real app with a db, we'd use this commented-out function.
+// export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+//   const appliance = await getApplianceById(params.id);
+//   if (!appliance) {
+//     return { title: 'Appliance Not Found' };
+//   }
+//   return { title: `${appliance.name} Details` };
+// }
 
 export default async function ApplianceDetailPage({ params }: { params: { id: string } }) {
   const appliance = await getApplianceById(params.id);

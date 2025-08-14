@@ -53,7 +53,7 @@ const formSchema = z.object({
 type AddApplianceSheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onApplianceAdded: (appliance: Omit<Appliance, 'id' | 'stickerImageUrl'>, stickerFile: File | null) => void;
+  onApplianceAdded: (appliance: Omit<Appliance, 'id'>) => void;
 }
 
 export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddApplianceSheetProps) {
@@ -73,11 +73,14 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
   })
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    // For local session, we don't need to handle file uploads,
+    // so we just pass form values. The sticker image won't be saved.
     onApplianceAdded({
       ...values,
       type: values.type || 'other',
       purchaseDate: format(values.purchaseDate, "yyyy-MM-dd"),
-    }, stickerFile);
+      stickerImageUrl: stickerFile ? URL.createObjectURL(stickerFile) : undefined,
+    });
     form.reset();
     setStickerFile(null);
   }
@@ -190,7 +193,7 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
                   </label>
                 </Button>
               </FormControl>
-              <FormDescription>Upload a picture of the appliance sticker.</FormDescription>
+              <FormDescription>Upload a picture of the appliance sticker. Image will only be shown for this session.</FormDescription>
             </FormItem>
 
             {stickerFile && (

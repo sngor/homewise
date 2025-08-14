@@ -54,24 +54,9 @@ export default function Home() {
     fetchAppliances();
   }, [toast])
 
-  const handleAddAppliance = async (newAppliance: Omit<Appliance, 'id' | 'stickerImageUrl'>, stickerFile: File | null) => {
+  const handleAddAppliance = async (newAppliance: Omit<Appliance, 'id'>) => {
     try {
-      let stickerData: {name: string, dataUrl: string} | undefined = undefined;
-      if (stickerFile) {
-        // Convert the file to a data URL to pass to the server action
-        stickerData = {
-          name: stickerFile.name,
-          dataUrl: await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (event) => resolve(event.target?.result as string);
-            reader.onerror = (error) => reject(error);
-            reader.readAsDataURL(stickerFile);
-          }),
-        }
-      }
-
-      const addedAppliance = await addAppliance(newAppliance, stickerData);
-
+      const addedAppliance = await addAppliance(newAppliance);
       setAppliances(prev => [addedAppliance, ...prev]);
       setIsSheetOpen(false);
       toast({
@@ -91,7 +76,7 @@ export default function Home() {
     if (!applianceToDelete) return;
     
     try {
-      await deleteAppliance(applianceToDelete.id, applianceToDelete.stickerImageUrl);
+      await deleteAppliance(applianceToDelete.id);
       setAppliances(prev => prev.filter(app => app.id !== applianceToDelete.id));
       toast({
         title: "Appliance Deleted",
@@ -191,7 +176,7 @@ export default function Home() {
               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
               <AlertDialogDescription>
                 This action cannot be undone. This will permanently delete the
-                appliance and remove its data from our servers.
+                appliance.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
