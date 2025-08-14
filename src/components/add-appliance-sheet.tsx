@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { format } from "date-fns"
-import { CalendarIcon, Upload, Scan } from "lucide-react"
+import { CalendarIcon, Upload, Scan, Loader2 } from "lucide-react"
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
@@ -36,6 +36,8 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import type { Appliance } from "@/lib/types"
+import { getApplianceDetailsFromImage } from "@/app/actions"
+import { useToast } from "@/hooks/use-toast"
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -57,6 +59,8 @@ type AddApplianceSheetProps = {
 
 export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddApplianceSheetProps) {
   const [stickerFile, setStickerFile] = useState<File | null>(null);
+  const [isExtracting, setIsExtracting] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -84,12 +88,44 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
     }
   }
 
-  const handleExtractDetails = () => {
-    // Simulate AI extraction from image
-    form.setValue("model", "DEMO-MODEL-123");
-    form.setValue("serial", "DEMO-SERIAL-XYZ");
-    form.setValue("name", "Extracted Appliance");
-    form.setValue("type", "refrigerator");
+  const handleExtractDetails = async () => {
+    if (!stickerFile) return;
+
+    setIsExtracting(true);
+
+    const reader = new FileReader();
+    reader.readAsDataURL(stickerFile);
+    reader.onload = async () => {
+        const photoDataUri = reader.result as string;
+        const result = await getApplianceDetailsFromImage({ photoDataUri });
+
+        if (result) {
+            form.setValue("name", result.name);
+            form.setValue("type", result.type);
+            form.setValue("model", result.model);
+            form.setValue("serial", result.serial);
+            toast({
+                title: "Details Extracted",
+                description: "Appliance details have been filled in from the image.",
+            });
+        } else {
+            toast({
+                variant: "destructive",
+                title: "Extraction Failed",
+                description: "Could not extract details from the image. Please enter them manually.",
+            });
+        }
+        setIsExtracting(false);
+    };
+    reader.onerror = (error) => {
+        console.error("Error reading file:", error);
+        toast({
+            variant: "destructive",
+            title: "File Read Error",
+            description: "There was an error processing the image file.",
+        });
+        setIsExtracting(false);
+    };
   }
 
   return (
@@ -126,9 +162,13 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
             {stickerFile && (
               <div className="space-y-2 rounded-md border p-4 bg-secondary/50">
                 <p className="text-sm text-muted-foreground">Selected: <span className="font-medium text-foreground">{stickerFile.name}</span></p>
-                <Button type="button" variant="secondary" onClick={handleExtractDetails} className="w-full">
-                  <Scan className="mr-2 h-4 w-4" />
-                  Extract Details from Image
+                <Button type="button" variant="secondary" onClick={handleExtractDetails} className="w-full" disabled={isExtracting}>
+                  {isExtracting ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                      <Scan className="mr-2 h-4 w-4" />
+                  )}
+                  {isExtracting ? "Extracting..." : "Extract Details from Image"}
                 </Button>
               </div>
             )}
