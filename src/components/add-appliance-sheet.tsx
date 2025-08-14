@@ -54,7 +54,7 @@ const formSchema = z.object({
 type AddApplianceSheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onApplianceAdded: (appliance: Omit<Appliance, 'id'>) => void;
+  onApplianceAdded: (appliance: Omit<Appliance, 'id'>, stickerFile: File | null) => void;
 }
 
 export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddApplianceSheetProps) {
@@ -79,7 +79,7 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
       type: values.type || 'other',
       purchaseDate: format(values.purchaseDate, "yyyy-MM-dd"),
       stickerImageUrl: imageUrl,
-    });
+    }, stickerFile);
     form.reset();
     setStickerFile(null);
   }

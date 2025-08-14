@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AddApplianceSheet } from '@/components/add-appliance-sheet';
 import type { Appliance } from '@/lib/types';
-import { MOCK_APPLIANCES } from '@/lib/data';
+import { getAppliances, addAppliance, deleteAppliance } from '@/lib/data';
 import { ApplianceIcon } from '@/components/appliance-icon';
 import {
   AlertDialog,
@@ -20,24 +20,84 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 
 export default function Home() {
-  const [appliances, setAppliances] = useState<Appliance[]>(MOCK_APPLIANCES);
+  const [appliances, setAppliances] = useState<Appliance[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const isMobile = useIsMobile();
+  const [isLoading, setIsLoading] = useState(true);
+  const [applianceToDelete, setApplianceToDelete] = useState<Appliance | null>(null);
 
-  const handleAddAppliance = (newAppliance: Omit<Appliance, 'id'>) => {
-    const applianceWithId = { ...newAppliance, id: new Date().toISOString() };
-    setAppliances(prev => [applianceWithId, ...prev]);
-    setIsSheetOpen(false);
+  const isMobile = useIsMobile();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchAppliances = async () => {
+        setIsLoading(true);
+        const fetchedAppliances = await getAppliances();
+        setAppliances(fetchedAppliances);
+        setIsLoading(false);
+    }
+    fetchAppliances();
+  }, [])
+
+  const handleAddAppliance = async (newAppliance: Omit<Appliance, 'id'>, stickerFile: File | null) => {
+    try {
+      let stickerData: {name: string, dataUrl: string} | undefined = undefined;
+      if (stickerFile) {
+        stickerData = {
+          name: stickerFile.name,
+          dataUrl: await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (event) => resolve(event.target?.result as string);
+            reader.onerror = (error) => reject(error);
+            reader.readAsDataURL(stickerFile);
+          }),
+        }
+      }
+
+      // We remove stickerImageUrl from newAppliance because it's a local blob url
+      const { stickerImageUrl, ...applianceData } = newAppliance;
+      const addedAppliance = await addAppliance(applianceData, stickerData);
+
+      setAppliances(prev => [addedAppliance, ...prev]);
+      setIsSheetOpen(false);
+      toast({
+        title: "Appliance Added",
+        description: `${addedAppliance.name} has been successfully added.`,
+      })
+    } catch(e) {
+      toast({
+        variant: "destructive",
+        title: "Failed to Add Appliance",
+        description: e instanceof Error ? e.message : "An unknown error occurred.",
+      })
+    }
   };
 
-  const handleDeleteAppliance = (id: string) => {
-    setAppliances(prev => prev.filter(app => app.id !== id));
+  const handleDeleteAppliance = async () => {
+    if (!applianceToDelete) return;
+    
+    try {
+      await deleteAppliance(applianceToDelete.id, applianceToDelete.stickerImageUrl);
+      setAppliances(prev => prev.filter(app => app.id !== applianceToDelete.id));
+      toast({
+        title: "Appliance Deleted",
+        description: `${applianceToDelete.name} has been removed.`,
+      })
+    } catch(e) {
+      toast({
+        variant: "destructive",
+        title: "Failed to Delete Appliance",
+        description: e instanceof Error ? e.message : "An unknown error occurred.",
+      })
+    } finally {
+        setApplianceToDelete(null);
+    }
   };
 
   return (
@@ -58,7 +118,13 @@ export default function Home() {
         </Button>
       </header>
       <main className="flex-1 overflow-auto p-4 md:p-6">
-        {appliances.length > 0 ? (
+        {isLoading ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {Array.from({length: 4}).map((_, i) => (
+                  <Card key={i}><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="aspect-video w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></Card>
+              ))}
+            </div>
+        ) : appliances.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {appliances.map((appliance) => (
               <Card key={appliance.id} className="flex flex-col hover:shadow-lg transition-shadow">
@@ -81,35 +147,16 @@ export default function Home() {
                        src={appliance.stickerImageUrl || "https://placehold.co/600x400.png"} 
                        alt={`${appliance.name} sticker`}
                        fill
-                       className="rounded-md object-cover"
+                       className="rounded-md object-cover border"
                        data-ai-hint="appliance sticker"
                      />
                    </div>
                 </CardContent>
                 <CardFooter className="flex justify-between">
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                       <Button variant="destructive" size={isMobile ? "icon" : "sm"}>
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only sm:not-sr-only sm:ml-2">Delete</span>
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete the
-                          appliance and remove its data from our servers.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDeleteAppliance(appliance.id)}>
-                          Continue
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <Button variant="destructive" size={isMobile ? "icon" : "sm"} onClick={() => setApplianceToDelete(appliance)}>
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only sm:not-sr-only sm:ml-2">Delete</span>
+                  </Button>
                   <Button asChild size="sm">
                     <Link href={`/appliance/${appliance.id}`}>View Details</Link>
                   </Button>
@@ -130,6 +177,23 @@ export default function Home() {
           </div>
         )}
       </main>
+      <AlertDialog open={!!applianceToDelete} onOpenChange={(open) => !open && setApplianceToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the
+                appliance and remove its data from our servers.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setApplianceToDelete(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteAppliance}>
+                Continue
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
     </div>
   );
 }

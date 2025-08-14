@@ -15,15 +15,15 @@ import { Separator } from '@/components/ui/separator';
 import { MaintenanceCard } from '@/components/maintenance-card';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const appliance = getApplianceById(params.id);
+  const appliance = await getApplianceById(params.id);
   if (!appliance) {
     return { title: 'Appliance Not Found' };
   }
   return { title: `${appliance.name} Details` };
 }
 
-export default function ApplianceDetailPage({ params }: { params: { id: string } }) {
-  const appliance = getApplianceById(params.id);
+export default async function ApplianceDetailPage({ params }: { params: { id: string } }) {
+  const appliance = await getApplianceById(params.id);
 
   if (!appliance) {
     notFound();
