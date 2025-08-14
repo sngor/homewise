@@ -73,10 +73,12 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
   })
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    const imageUrl = stickerFile ? URL.createObjectURL(stickerFile) : undefined;
     onApplianceAdded({
       ...values,
       type: values.type || 'other',
       purchaseDate: format(values.purchaseDate, "yyyy-MM-dd"),
+      stickerImageUrl: imageUrl,
     });
     form.reset();
     setStickerFile(null);
@@ -97,25 +99,29 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
     reader.readAsDataURL(stickerFile);
     reader.onload = async () => {
         const photoDataUri = reader.result as string;
-        const result = await getApplianceDetailsFromImage({ photoDataUri });
-
-        if (result) {
-            form.setValue("name", result.name);
-            form.setValue("type", result.type);
-            form.setValue("model", result.model);
-            form.setValue("serial", result.serial);
-            toast({
-                title: "Details Extracted",
-                description: "Appliance details have been filled in from the image.",
-            });
-        } else {
-            toast({
+        try {
+            const result = await getApplianceDetailsFromImage({ photoDataUri });
+            if (result) {
+                form.setValue("name", result.name);
+                form.setValue("type", result.type);
+                form.setValue("model", result.model);
+                form.setValue("serial", result.serial);
+                toast({
+                    title: "Details Extracted",
+                    description: "Appliance details have been filled in from the image.",
+                });
+            } else {
+                 throw new Error("Extraction returned no result.");
+            }
+        } catch(e) {
+             toast({
                 variant: "destructive",
                 title: "Extraction Failed",
                 description: "Could not extract details from the image. Please enter them manually.",
             });
+        } finally {
+            setIsExtracting(false);
         }
-        setIsExtracting(false);
     };
     reader.onerror = (error) => {
         console.error("Error reading file:", error);

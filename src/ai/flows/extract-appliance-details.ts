@@ -35,18 +35,11 @@ const prompt = ai.definePrompt({
   name: 'extractApplianceDetailsPrompt',
   input: {schema: ExtractApplianceDetailsInputSchema},
   output: {schema: ExtractApplianceDetailsOutputSchema},
-  prompt: `You are an expert at reading appliance stickers from images. Analyze the provided image of an appliance sticker.
+  prompt: `Analyze the provided image of an appliance sticker and extract the appliance type, model number, and serial number. Also, suggest a descriptive name for the appliance (e.g., "Kitchen Fridge").
 
-Your task is to extract the following information:
-1.  **Appliance Type**: Determine the type of appliance (e.g., refrigerator, oven, etc.).
-2.  **Model Number**: Find the model number.
-3.  **Serial Number**: Find the serial number.
-4.  **Appliance Name**: Suggest a descriptive name for the appliance (e.g., "Kitchen Fridge").
+If a model or serial number cannot be found, return an empty string for that field.
 
-If you cannot find a specific piece of information (like the model or serial number), return an empty string for that field.
-
-Use the following image as your source:
-Photo: {{media url=photoDataUri}}`,
+Image: {{media url=photoDataUri}}`,
 });
 
 const extractApplianceDetailsFlow = ai.defineFlow(
