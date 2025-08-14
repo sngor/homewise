@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { format } from "date-fns"
-import { CalendarIcon, Upload, Scan, Loader2 } from "lucide-react"
+import { CalendarIcon, Upload, Scan, Loader2, Wand2 } from "lucide-react"
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
@@ -36,7 +36,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import type { Appliance } from "@/lib/types"
-import { getApplianceDetailsFromImage } from "@/app/actions"
+import { getApplianceDetailsFromImage, getMaintenanceScedule } from "@/app/actions"
 import { useToast } from "@/hooks/use-toast"
 
 const formSchema = z.object({
@@ -60,6 +60,7 @@ type AddApplianceSheetProps = {
 export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddApplianceSheetProps) {
   const [stickerFile, setStickerFile] = useState<File | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
+  const [isSuggesting, setIsSuggesting] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -130,6 +131,39 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
         setIsExtracting(false);
     };
   }
+
+  const handleSuggestSchedule = async () => {
+      const applianceType = form.getValues("type");
+      const applianceModel = form.getValues("model");
+
+      if (!applianceType || !applianceModel) {
+          toast({
+              variant: "destructive",
+              title: "Missing Information",
+              description: "Please provide an appliance type and model number first.",
+          });
+          return;
+      }
+
+      setIsSuggesting(true);
+      try {
+          const result = await getMaintenanceScedule({ applianceType, applianceModel });
+          form.setValue("maintenanceSchedule", result.schedule);
+          toast({
+              title: "Schedule Suggested",
+              description: "An AI-powered maintenance schedule has been generated.",
+          });
+      } catch (e) {
+          const error = e instanceof Error ? e.message : "Could not suggest a schedule.";
+          toast({
+              variant: "destructive",
+              title: "Suggestion Failed",
+              description: error,
+          });
+      } finally {
+          setIsSuggesting(false);
+      }
+  };
 
   return (
     <Sheet open={open} onOpenChange={(isOpen) => {
@@ -282,20 +316,30 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="maintenanceSchedule"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Maintenance Schedule</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Every 6 months" {...field} />
-                  </FormControl>
-                  <FormDescription>Describe the maintenance frequency.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+             <FormField
+                control={form.control}
+                name="maintenanceSchedule"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Maintenance Schedule</FormLabel>
+                      <Button type="button" variant="ghost" size="sm" onClick={handleSuggestSchedule} disabled={isSuggesting}>
+                        {isSuggesting ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ): (
+                          <Wand2 className="mr-2 h-4 w-4" />
+                        )}
+                        Suggest
+                      </Button>
+                    </div>
+                    <FormControl>
+                      <Input placeholder="e.g. Every 6 months" {...field} />
+                    </FormControl>
+                    <FormDescription>Describe the maintenance frequency, or let AI suggest one.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
             <Button type="submit" className="w-full">Save Appliance</Button>
           </form>
