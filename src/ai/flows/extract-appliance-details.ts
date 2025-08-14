@@ -14,7 +14,7 @@ const ExtractApplianceDetailsInputSchema = z.object({
   photoDataUri: z
     .string()
     .describe(
-      "A photo of a plant, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "A photo of an appliance sticker, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
 });
 export type ExtractApplianceDetailsInput = z.infer<typeof ExtractApplianceDetailsInputSchema>;
@@ -22,8 +22,8 @@ export type ExtractApplianceDetailsInput = z.infer<typeof ExtractApplianceDetail
 const ExtractApplianceDetailsOutputSchema = z.object({
   name: z.string().describe('A suggested name for the appliance, e.g., "Kitchen Fridge".'),
   type: z.enum(['refrigerator', 'oven', 'washer', 'dishwasher', 'tv', 'ac', 'other']).describe('The type of the appliance.'),
-  model: z.string().describe('The model number of the appliance.'),
-  serial: z.string().describe('The serial number of the appliance.'),
+  model: z.string().describe('The model number of the appliance. If not found, return an empty string.'),
+  serial: z.string().describe('The serial number of the appliance. If not found, return an empty string.'),
 });
 export type ExtractApplianceDetailsOutput = z.infer<typeof ExtractApplianceDetailsOutputSchema>;
 
@@ -35,8 +35,17 @@ const prompt = ai.definePrompt({
   name: 'extractApplianceDetailsPrompt',
   input: {schema: ExtractApplianceDetailsInputSchema},
   output: {schema: ExtractApplianceDetailsOutputSchema},
-  prompt: `You are an expert at reading appliance stickers from images. Analyze the provided image and extract the following information: the appliance type, its model number, and its serial number. Also provide a suggested descriptive name for the appliance.
+  prompt: `You are an expert at reading appliance stickers from images. Analyze the provided image of an appliance sticker.
 
+Your task is to extract the following information:
+1.  **Appliance Type**: Determine the type of appliance (e.g., refrigerator, oven, etc.).
+2.  **Model Number**: Find the model number.
+3.  **Serial Number**: Find the serial number.
+4.  **Appliance Name**: Suggest a descriptive name for the appliance (e.g., "Kitchen Fridge").
+
+If you cannot find a specific piece of information (like the model or serial number), return an empty string for that field.
+
+Use the following image as your source:
 Photo: {{media url=photoDataUri}}`,
 });
 
