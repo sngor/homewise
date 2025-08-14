@@ -22,10 +22,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { useIsMobile } from '@/hooks/use-mobile';
+
 
 export default function Home() {
   const [appliances, setAppliances] = useState<Appliance[]>(MOCK_APPLIANCES);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleAddAppliance = (newAppliance: Omit<Appliance, 'id'>) => {
     const applianceWithId = { ...newAppliance, id: new Date().toISOString() };
@@ -44,19 +47,19 @@ export default function Home() {
         onOpenChange={setIsSheetOpen}
         onApplianceAdded={handleAddAppliance}
       />
-      <header className="flex items-center justify-between p-4 md:p-6 border-b bg-secondary/50">
+      <header className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-4 p-4 md:p-6 border-b bg-secondary/50">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Home Inventory</h1>
-          <p className="text-muted-foreground">Manage all your home appliances in one place.</p>
+          <p className="text-muted-foreground mt-1">Manage all your home appliances in one place.</p>
         </div>
-        <Button onClick={() => setIsSheetOpen(true)}>
-          <PlusCircle />
+        <Button onClick={() => setIsSheetOpen(true)} className="w-full sm:w-auto">
+          <PlusCircle className="mr-2 h-4 w-4" />
           Add Appliance
         </Button>
       </header>
       <main className="flex-1 overflow-auto p-4 md:p-6">
         {appliances.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {appliances.map((appliance) => (
               <Card key={appliance.id} className="flex flex-col hover:shadow-lg transition-shadow">
                 <CardHeader>
@@ -86,9 +89,9 @@ export default function Home() {
                 <CardFooter className="flex justify-between">
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="destructive" size="sm">
-                        <Trash2 />
-                        Delete
+                       <Button variant="destructive" size={isMobile ? "icon" : "sm"}>
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only sm:not-sr-only sm:ml-2">Delete</span>
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
@@ -117,11 +120,11 @@ export default function Home() {
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center p-8 border-2 border-dashed rounded-lg bg-secondary/50">
             <h2 className="text-xl font-semibold">No Appliances Yet</h2>
-            <p className="text-muted-foreground mt-2 mb-4">
-              Click the button below to add your first appliance.
+            <p className="text-muted-foreground mt-2 mb-4 max-w-sm">
+              Click the button below to add your first appliance and start managing your home inventory.
             </p>
-            <Button onClick={() => setIsSheetOpen(true)}>
-              <PlusCircle />
+            <Button onClick={() => setIsSheetOpen(true)} size="lg">
+              <PlusCircle className="mr-2 h-4 w-4" />
               Add Appliance
             </Button>
           </div>

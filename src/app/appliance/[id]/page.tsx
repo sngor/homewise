@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   if (!appliance) {
     return { title: 'Appliance Not Found' };
   }
-  return { title: appliance.name };
+  return { title: `${appliance.name} Details` };
 }
 
 export default function ApplianceDetailPage({ params }: { params: { id: string } }) {
@@ -47,29 +47,29 @@ export default function ApplianceDetailPage({ params }: { params: { id: string }
       <div className="mb-4">
         <Button variant="outline" asChild>
           <Link href="/">
-            <ArrowLeft />
+            <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Inventory
           </Link>
         </Button>
       </div>
 
       <header className="mb-6">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
            <div className="p-3 bg-secondary rounded-lg">
              <ApplianceIcon type={appliance.type} className="h-8 w-8 text-muted-foreground" />
            </div>
-           <div>
-            <h1 className="text-3xl font-bold">{appliance.name}</h1>
+           <div className="flex-1">
+            <h1 className="text-2xl md:text-3xl font-bold">{appliance.name}</h1>
             <Badge variant="secondary" className="capitalize mt-1">{appliance.type}</Badge>
            </div>
         </div>
       </header>
 
       <Tabs defaultValue="details" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="details"><Info />Details</TabsTrigger>
-          <TabsTrigger value="parts"><Wrench />Parts</TabsTrigger>
-          <TabsTrigger value="maintenance"><Calendar />Maintenance</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto sm:h-10">
+          <TabsTrigger value="details"><Info className="mr-2 h-4 w-4" />Details</TabsTrigger>
+          <TabsTrigger value="parts"><Wrench className="mr-2 h-4 w-4" />Parts</TabsTrigger>
+          <TabsTrigger value="maintenance"><Calendar className="mr-2 h-4 w-4" />Maintenance</TabsTrigger>
         </TabsList>
         <TabsContent value="details" className="mt-4">
           <Card>
@@ -79,16 +79,16 @@ export default function ApplianceDetailPage({ params }: { params: { id: string }
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4 text-sm">
                 {detailItems.map(item => (
-                  <div key={item.label} className="grid grid-cols-2 gap-2 p-2 rounded-md hover:bg-secondary/50">
+                  <div key={item.label} className="grid grid-cols-[150px_1fr] sm:grid-cols-2 gap-2 p-2 rounded-md hover:bg-secondary/50 items-center">
                     <dt className="font-medium text-muted-foreground">{item.label}</dt>
-                    <dd>{item.value}</dd>
+                    <dd className="break-words">{item.value}</dd>
                   </div>
                 ))}
               </div>
                <Separator/>
                <div className="space-y-2">
                  <h4 className="font-medium">Appliance Sticker</h4>
-                 <div className="relative aspect-video max-w-md">
+                 <div className="relative aspect-video max-w-full sm:max-w-md">
                    <Image 
                      src={appliance.stickerImageUrl || "https://placehold.co/600x400.png"} 
                      alt={`${appliance.name} sticker`} 
@@ -114,15 +114,15 @@ export default function ApplianceDetailPage({ params }: { params: { id: string }
                     <CardContent className="space-y-4">
                         <ul className="space-y-3">
                             {repairServices.map(service => (
-                                <li key={service.name} className="flex items-center justify-between p-2 rounded-md hover:bg-secondary/50">
+                                <li key={service.name} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-2 rounded-md hover:bg-secondary/50">
                                     <div className="flex items-center gap-3">
-                                        <HardHat className="h-5 w-5 text-muted-foreground"/>
+                                        <HardHat className="h-5 w-5 text-muted-foreground flex-shrink-0"/>
                                         <div>
                                             <p className="font-medium">{service.name}</p>
                                             <p className="text-xs text-muted-foreground">Rating: {service.rating} / 5</p>
                                         </div>
                                     </div>
-                                    <Button variant="outline" size="sm" asChild>
+                                    <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
                                         <a href={`tel:${service.phone}`}><Phone className="mr-2 h-3 w-3" /> Call</a>
                                     </Button>
                                 </li>
