@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, Calendar, Wrench, Info, HardHat, Phone } from 'lucide-react';
+import { Metadata } from 'next';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +13,14 @@ import { ApplianceIcon } from '@/components/appliance-icon';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { MaintenanceCard } from '@/components/maintenance-card';
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const appliance = getApplianceById(params.id);
+  if (!appliance) {
+    return { title: 'Appliance Not Found' };
+  }
+  return { title: appliance.name };
+}
 
 export default function ApplianceDetailPage({ params }: { params: { id: string } }) {
   const appliance = getApplianceById(params.id);
@@ -38,7 +47,7 @@ export default function ApplianceDetailPage({ params }: { params: { id: string }
       <div className="mb-4">
         <Button variant="outline" asChild>
           <Link href="/">
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft />
             Back to Inventory
           </Link>
         </Button>
@@ -51,16 +60,16 @@ export default function ApplianceDetailPage({ params }: { params: { id: string }
            </div>
            <div>
             <h1 className="text-3xl font-bold">{appliance.name}</h1>
-            <Badge variant="outline" className="capitalize mt-1">{appliance.type}</Badge>
+            <Badge variant="secondary" className="capitalize mt-1">{appliance.type}</Badge>
            </div>
         </div>
       </header>
 
       <Tabs defaultValue="details" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="details"><Info className="mr-2 h-4 w-4" />Details</TabsTrigger>
-          <TabsTrigger value="parts"><Wrench className="mr-2 h-4 w-4" />Parts</TabsTrigger>
-          <TabsTrigger value="maintenance"><Calendar className="mr-2 h-4 w-4" />Maintenance</TabsTrigger>
+          <TabsTrigger value="details"><Info />Details</TabsTrigger>
+          <TabsTrigger value="parts"><Wrench />Parts</TabsTrigger>
+          <TabsTrigger value="maintenance"><Calendar />Maintenance</TabsTrigger>
         </TabsList>
         <TabsContent value="details" className="mt-4">
           <Card>

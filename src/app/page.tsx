@@ -44,21 +44,21 @@ export default function Home() {
         onOpenChange={setIsSheetOpen}
         onApplianceAdded={handleAddAppliance}
       />
-      <header className="flex items-center justify-between p-4 md:p-6 border-b">
+      <header className="flex items-center justify-between p-4 md:p-6 border-b bg-secondary/50">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Home Inventory</h1>
           <p className="text-muted-foreground">Manage all your home appliances in one place.</p>
         </div>
         <Button onClick={() => setIsSheetOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" />
+          <PlusCircle />
           Add Appliance
         </Button>
       </header>
-      <div className="flex-1 overflow-auto p-4 md:p-6">
+      <main className="flex-1 overflow-auto p-4 md:p-6">
         {appliances.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {appliances.map((appliance) => (
-              <Card key={appliance.id} className="flex flex-col">
+              <Card key={appliance.id} className="flex flex-col hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
@@ -76,7 +76,7 @@ export default function Home() {
                    <div className="relative aspect-video w-full">
                      <Image 
                        src={appliance.stickerImageUrl || "https://placehold.co/600x400.png"} 
-                       alt={appliance.name} 
+                       alt={`${appliance.name} sticker`}
                        fill
                        className="rounded-md object-cover"
                        data-ai-hint="appliance sticker"
@@ -87,7 +87,7 @@ export default function Home() {
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive" size="sm">
-                        <Trash2 className="mr-2 h-4 w-4" />
+                        <Trash2 />
                         Delete
                       </Button>
                     </AlertDialogTrigger>
@@ -115,18 +115,18 @@ export default function Home() {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-center p-8 border-2 border-dashed rounded-lg">
+          <div className="flex flex-col items-center justify-center h-full text-center p-8 border-2 border-dashed rounded-lg bg-secondary/50">
             <h2 className="text-xl font-semibold">No Appliances Yet</h2>
             <p className="text-muted-foreground mt-2 mb-4">
               Click the button below to add your first appliance.
             </p>
             <Button onClick={() => setIsSheetOpen(true)}>
-              <PlusCircle className="mr-2 h-4 w-4" />
+              <PlusCircle />
               Add Appliance
             </Button>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
