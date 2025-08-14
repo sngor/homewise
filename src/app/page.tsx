@@ -38,9 +38,18 @@ export default function Home() {
   useEffect(() => {
     const fetchAppliances = async () => {
         setIsLoading(true);
-        const fetchedAppliances = await getAppliances();
-        setAppliances(fetchedAppliances);
-        setIsLoading(false);
+        try {
+          const fetchedAppliances = await getAppliances();
+          setAppliances(fetchedAppliances);
+        } catch (e) {
+          toast({
+            variant: "destructive",
+            title: "Failed to load appliances",
+            description: e instanceof Error ? e.message : "An unknown error occurred.",
+          });
+        } finally {
+          setIsLoading(false);
+        }
     }
     fetchAppliances();
   }, [])
@@ -49,6 +58,7 @@ export default function Home() {
     try {
       let stickerData: {name: string, dataUrl: string} | undefined = undefined;
       if (stickerFile) {
+        // Convert the file to a data URL to pass to the server action
         stickerData = {
           name: stickerFile.name,
           dataUrl: await new Promise((resolve, reject) => {
@@ -60,6 +70,7 @@ export default function Home() {
         }
       }
 
+      // The stickerImageUrl in `newAppliance` is a local blob URL, which we don't need to pass
       const addedAppliance = await addAppliance(newAppliance, stickerData);
 
       setAppliances(prev => [addedAppliance, ...prev]);
@@ -117,13 +128,13 @@ export default function Home() {
       </header>
       <main className="flex-1 overflow-auto p-4 md:p-6">
         {isLoading ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {Array.from({length: 4}).map((_, i) => (
                   <Card key={i}><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="aspect-video w-full" /></CardContent><CardFooter><Skeleton className="h-10 w-full" /></CardFooter></Card>
               ))}
             </div>
         ) : appliances.length > 0 ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {appliances.map((appliance) => (
               <Card key={appliance.id} className="flex flex-col hover:shadow-lg transition-shadow">
                 <CardHeader>
@@ -150,12 +161,12 @@ export default function Home() {
                      />
                    </div>
                 </CardContent>
-                <CardFooter className="flex justify-between">
+                <CardFooter className="flex justify-between gap-2">
                   <Button variant="destructive" size={isMobile ? "icon" : "sm"} onClick={() => setApplianceToDelete(appliance)}>
                     <Trash2 className="h-4 w-4" />
                     <span className="sr-only sm:not-sr-only sm:ml-2">Delete</span>
                   </Button>
-                  <Button asChild size="sm">
+                  <Button asChild size="sm" className='flex-1 sm:flex-initial'>
                     <Link href={`/appliance/${appliance.id}`}>View Details</Link>
                   </Button>
                 </CardFooter>

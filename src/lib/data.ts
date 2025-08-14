@@ -1,4 +1,4 @@
-import { collection, getDocs, doc, getDoc, addDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, addDoc, deleteDoc, updateDoc, query, orderBy, limit } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from './firebase';
 import type { Appliance } from './types';
@@ -7,7 +7,8 @@ const APPLIANCES_COLLECTION = 'appliances';
 
 export const getAppliances = async (): Promise<Appliance[]> => {
     try {
-        const querySnapshot = await getDocs(collection(db, APPLIANCES_COLLECTION));
+        const q = query(collection(db, APPLIANCES_COLLECTION), orderBy('purchaseDate', 'desc'));
+        const querySnapshot = await getDocs(q);
         const appliances = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Appliance));
         return appliances;
     } catch (error) {
@@ -34,34 +35,45 @@ export const getApplianceById = async (id: string): Promise<Appliance | undefine
 }
 
 export const addAppliance = async (applianceData: Omit<Appliance, 'id'>, stickerFile?: { name: string, dataUrl: string }): Promise<Appliance> => {
-    let stickerImageUrl: string | undefined = undefined;
+    let finalStickerImageUrl: string | undefined = undefined;
 
+    // If a sticker file is provided, upload it to Firebase Storage
     if (stickerFile) {
         const storageRef = ref(storage, `stickers/${new Date().toISOString()}-${stickerFile.name}`);
         await uploadString(storageRef, stickerFile.dataUrl, 'data_url');
-        stickerImageUrl = await getDownloadURL(storageRef);
+        finalStickerImageUrl = await getDownloadURL(storageRef);
     }
     
-    // We remove the temporary stickerImageUrl from the form before saving.
-    const { stickerImageUrl: tempUrl, ...restOfApplianceData } = applianceData;
+    // Create a new object to be saved, excluding the temporary stickerImageUrl from the form
+    const { stickerImageUrl, ...restOfApplianceData } = applianceData;
     
-    const docRef = await addDoc(collection(db, APPLIANCES_COLLECTION), {
+    const dataToSave = {
         ...restOfApplianceData,
-        stickerImageUrl: stickerImageUrl || '',
-    });
+        stickerImageUrl: finalStickerImageUrl || '', // Use the final URL or an empty string
+    };
 
-    return { id: docRef.id, ...applianceData, stickerImageUrl };
+    // Add the new appliance document to Firestore
+    const docRef = await addDoc(collection(db, APPLIANCES_COLLECTION), dataToSave);
+
+    // Return the complete appliance object, including the new ID and correct image URL
+    return { 
+      id: docRef.id, 
+      ...dataToSave 
+    } as Appliance;
 }
 
 export const deleteAppliance = async (id: string, stickerImageUrl?: string) => {
     try {
         if (stickerImageUrl) {
             try {
+                // Create a reference from the HTTPS URL
                 const imageRef = ref(storage, stickerImageUrl);
                 await deleteObject(imageRef);
             } catch (error: any) {
+                // It's okay if the object doesn't exist (e.g., already deleted)
                 if (error.code !== 'storage/object-not-found') {
                     console.error("Error deleting image from storage: ", error);
+                    // Decide if you want to re-throw or just log the error
                 }
             }
         }
