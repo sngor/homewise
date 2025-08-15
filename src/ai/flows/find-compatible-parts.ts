@@ -45,8 +45,8 @@ const prompt = ai.definePrompt({
 
   Identify and list compatible replacement parts for this appliance model. For each part, provide its name and a brief, one-sentence description.
   
-  {{#if (eq applianceType "refrigerator")}}
-  IMPORTANT: You must include "Water Filter" as one of the parts.
+  {{#if applianceType}}
+  If the applianceType is 'refrigerator', you MUST include "Water Filter" as one of the parts.
   {{/if}}
   `,
 });
