@@ -3,6 +3,7 @@
 import {
   findCompatibleParts,
   type FindCompatiblePartsInput,
+  type FindCompatiblePartsOutput,
 } from '@/ai/flows/find-compatible-parts';
 import {
   extractApplianceDetails,
@@ -19,17 +20,20 @@ import {
   type FindRepairServicesInput,
   type FindRepairServicesOutput,
 } from '@/ai/flows/find-repair-services';
-
+import {
+  getPartDetails,
+  type GetPartDetailsInput,
+  type GetPartDetailsOutput,
+} from '@/ai/flows/get-part-details';
 
 export async function getCompatibleParts(
   input: FindCompatiblePartsInput
-): Promise<string[]> {
+): Promise<FindCompatiblePartsOutput> {
   try {
     const result = await findCompatibleParts(input);
-    return result.parts;
+    return result;
   } catch (error) {
     console.error('Error finding compatible parts:', error);
-    // Re-throw the error to be handled by the component
     if (error instanceof Error) {
       throw new Error(`AI part finder failed: ${error.message}`);
     }
@@ -41,7 +45,6 @@ export async function getApplianceDetailsFromImage(
   input: ExtractApplianceDetailsInput
 ): Promise<ExtractApplianceDetailsOutput> {
   try {
-    // Ensure the flow call is awaited
     const result = await extractApplianceDetails(input);
     if (!result) {
       throw new Error('The AI flow returned no result.');
@@ -49,7 +52,6 @@ export async function getApplianceDetailsFromImage(
     return result;
   } catch (error) {
     console.error('Error extracting appliance details:', error);
-    // Re-throw the error to be handled by the component
     if (error instanceof Error) {
       throw new Error(`AI extraction failed: ${error.message}`);
     }
@@ -86,5 +88,20 @@ export async function getRepairServices(
       throw new Error(`AI service finder failed: ${error.message}`);
     }
     throw new Error('An unknown error occurred while finding repair services.');
+  }
+}
+
+export async function getSinglePartDetails(
+  input: GetPartDetailsInput
+): Promise<GetPartDetailsOutput> {
+  try {
+    const result = await getPartDetails(input);
+    return result;
+  } catch (error) {
+    console.error('Error getting part details:', error);
+    if (error instanceof Error) {
+      throw new Error(`AI part detail finder failed: ${error.message}`);
+    }
+    throw new Error('An unknown error occurred while getting part details.');
   }
 }

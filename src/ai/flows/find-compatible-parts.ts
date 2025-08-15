@@ -17,9 +17,16 @@ const FindCompatiblePartsInputSchema = z.object({
 });
 export type FindCompatiblePartsInput = z.infer<typeof FindCompatiblePartsInputSchema>;
 
+const PartSchema = z.object({
+  name: z.string().describe('The name of the compatible replacement part.'),
+  description: z.string().describe('A brief, one-sentence description of the part.'),
+});
+export type Part = z.infer<typeof PartSchema>;
+
+
 const FindCompatiblePartsOutputSchema = z.object({
   parts: z
-    .array(z.string())
+    .array(PartSchema)
     .describe('A list of compatible replacement parts for the appliance.'),
 });
 export type FindCompatiblePartsOutput = z.infer<typeof FindCompatiblePartsOutputSchema>;
@@ -32,7 +39,7 @@ const prompt = ai.definePrompt({
   name: 'findCompatiblePartsPrompt',
   input: {schema: FindCompatiblePartsInputSchema},
   output: {schema: FindCompatiblePartsOutputSchema},
-  prompt: `You are an expert appliance repair technician. A user has provided the following appliance brand '{{{applianceBrand}}}' and model: '{{{applianceModel}}}'.\n\n  Identify and list compatible replacement parts for this appliance model.  Provide a list of specific part names.\n  Return a JSON array of strings.`,
+  prompt: `You are an expert appliance repair technician. A user has provided the following appliance brand '{{{applianceBrand}}}' and model: '{{{applianceModel}}}'.\n\n  Identify and list compatible replacement parts for this appliance model. For each part, provide its name and a brief, one-sentence description.`,
 });
 
 const findCompatiblePartsFlow = ai.defineFlow(

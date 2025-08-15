@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { ArrowLeft, Calendar, Wrench, Info, HardHat, Phone, Loader2, Trash2, LocateFixed } from 'lucide-react';
 import type { Appliance } from '@/lib/types';
 import { getRepairServices } from '@/app/actions';
+import type { FindRepairServicesOutput } from '@/ai/flows/find-repair-services';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,11 +33,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-type RepairService = {
-  name: string;
-  phone: string;
-  rating: number;
-};
+type RepairService = FindRepairServicesOutput['services'][0];
 
 export default function ApplianceDetailPage() {
   const params = useParams();

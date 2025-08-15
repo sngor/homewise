@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Wrench, Loader2, Search } from 'lucide-react';
+import { Wrench, Loader2, Search, ChevronRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCompatibleParts } from "@/app/actions";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "./ui/badge";
+import type { Part } from "@/ai/flows/find-compatible-parts";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 
 type PartFinderProps = {
   brand: string;
@@ -14,24 +16,30 @@ type PartFinderProps = {
 };
 
 export function PartFinder({ brand, model }: PartFinderProps) {
-  const [parts, setParts] = useState<string[]>([]);
+  const [parts, setParts] = useState<Part[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const params = useParams();
+  const applianceId = params.id as string;
 
   const handleFindParts = async () => {
     setIsLoading(true);
     setError(null);
     setParts([]);
     
-    const result = await getCompatibleParts({ applianceBrand: brand, applianceModel: model });
+    try {
+      const result = await getCompatibleParts({ applianceBrand: brand, applianceModel: model });
 
-    if (result && result.length > 0) {
-      setParts(result);
-    } else {
-      setError("Could not find any compatible parts for this model. Please check the model number or try again later.");
+      if (result.parts && result.parts.length > 0) {
+        setParts(result.parts);
+      } else {
+        setError("Could not find any compatible parts for this model. Please check the model number or try again later.");
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "An unknown error occurred.");
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   return (
@@ -61,13 +69,19 @@ export function PartFinder({ brand, model }: PartFinderProps) {
         {parts.length > 0 && (
             <div>
                 <h3 className="font-semibold mb-2">Compatible Parts:</h3>
-                <div className="flex flex-wrap gap-2">
+                 <ul className="divide-y border rounded-md">
                     {parts.map((part, index) => (
-                        <Badge key={index} variant="secondary" className="text-sm px-3 py-1">
-                            {part}
-                        </Badge>
+                       <li key={index}>
+                         <Link href={`/appliance/${applianceId}/part/${encodeURIComponent(part.name)}`} className="flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors">
+                            <div>
+                                <p className="font-medium">{part.name}</p>
+                                <p className="text-sm text-muted-foreground">{part.description}</p>
+                            </div>
+                            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                         </Link>
+                       </li>
                     ))}
-                </div>
+                </ul>
             </div>
         )}
       </CardContent>
