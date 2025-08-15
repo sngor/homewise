@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Appliance } from '@/lib/types';
 import { addMonths, addYears, format, formatDistanceToNow, parseISO } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
 
 interface MaintenanceCardProps {
     appliance: Appliance;
@@ -18,7 +19,11 @@ const calculateNextDueDate = (startDateStr: string, schedule: string): Date | nu
     let monthsToAdd = 0;
     
     if (scheduleLower.includes("annually") || scheduleLower.includes("year")) {
-        return addYears(startDate, 1);
+        let nextDueDate = addYears(startDate, 1);
+        while (nextDueDate < new Date()) {
+            nextDueDate = addYears(nextDueDate, 1);
+        }
+        return nextDueDate;
     }
 
     const monthMatch = scheduleLower.match(/every (\d+) months?/);
@@ -39,11 +44,28 @@ const calculateNextDueDate = (startDateStr: string, schedule: string): Date | nu
 export function MaintenanceCard({ appliance }: MaintenanceCardProps) {
     const [reminderSet, setReminderSet] = useState(false);
     const [waterFilterReminderSet, setWaterFilterReminderSet] = useState(false);
+    const { toast } = useToast();
 
     const nextDueDate = useMemo(() => {
         const startDate = appliance.installationDate || appliance.purchaseDate;
         return calculateNextDueDate(startDate, appliance.maintenanceSchedule)
     }, [appliance.installationDate, appliance.purchaseDate, appliance.maintenanceSchedule]);
+
+    const handleSetReminder = () => {
+        setReminderSet(true);
+        toast({
+            title: "Reminder Set!",
+            description: `We'll remind you for your next maintenance on ${format(nextDueDate!, "MMMM dd, yyyy")}.`,
+        });
+    };
+
+    const handleSetWaterFilterReminder = () => {
+        setWaterFilterReminderSet(true);
+        toast({
+            title: "Water Filter Reminder Set!",
+            description: `We'll remind you to change the water filter on ${format(nextDueDate!, "MMMM dd, yyyy")}.`,
+        });
+    };
 
 
     return (
@@ -67,7 +89,7 @@ export function MaintenanceCard({ appliance }: MaintenanceCardProps) {
                 <div className="flex flex-wrap gap-2">
                     {appliance.type === 'refrigerator' && (
                          <Button 
-                            onClick={() => setWaterFilterReminderSet(true)} 
+                            onClick={handleSetWaterFilterReminder} 
                             disabled={waterFilterReminderSet || !nextDueDate}
                             className="w-full sm:w-auto"
                             variant="secondary"
@@ -86,7 +108,7 @@ export function MaintenanceCard({ appliance }: MaintenanceCardProps) {
                         </Button>
                     )}
                     <Button 
-                        onClick={() => setReminderSet(true)} 
+                        onClick={handleSetReminder} 
                         disabled={reminderSet || !nextDueDate}
                         className="w-full sm:w-auto"
                     >
