@@ -78,6 +78,32 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
       maintenanceSchedule: "",
     },
   })
+  
+  const handleSuggestSchedule = async (applianceType: z.infer<typeof formSchema>['type'], applianceModel: string) => {
+      if (!applianceType || !applianceModel) {
+          return;
+      }
+
+      setIsSuggesting(true);
+      try {
+          const result = await getMaintenanceScedule({ applianceType, applianceModel });
+          form.setValue("maintenanceSchedule", result.schedule);
+          toast({
+              title: "Schedule Suggested",
+              description: "An AI-powered maintenance schedule has been generated.",
+          });
+      } catch (e) {
+          const error = e instanceof Error ? e.message : "Could not suggest a schedule.";
+          toast({
+              variant: "destructive",
+              title: "Suggestion Failed",
+              description: error,
+          });
+      } finally {
+          setIsSuggesting(false);
+      }
+  };
+
 
   const handleExtractDetails = async (file: File) => {
     if (!file) return;
@@ -99,6 +125,8 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
                 title: "Details Extracted",
                 description: "Appliance details have been filled in from the image.",
             });
+            // Automatically suggest schedule after extracting details
+            await handleSuggestSchedule(result.type, result.model);
         } catch(e) {
              const error = e instanceof Error ? e.message : "Could not extract details from the image. Please enter them manually.";
              toast({
@@ -141,39 +169,6 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
     setStickerFile(null);
   }
 
-  const handleSuggestSchedule = async () => {
-      const applianceType = form.getValues("type");
-      const applianceModel = form.getValues("model");
-
-      if (!applianceType || !applianceModel) {
-          toast({
-              variant: "destructive",
-              title: "Missing Information",
-              description: "Please provide an appliance type and model number first.",
-          });
-          return;
-      }
-
-      setIsSuggesting(true);
-      try {
-          const result = await getMaintenanceScedule({ applianceType, applianceModel });
-          form.setValue("maintenanceSchedule", result.schedule);
-          toast({
-              title: "Schedule Suggested",
-              description: "An AI-powered maintenance schedule has been generated.",
-          });
-      } catch (e) {
-          const error = e instanceof Error ? e.message : "Could not suggest a schedule.";
-          toast({
-              variant: "destructive",
-              title: "Suggestion Failed",
-              description: error,
-          });
-      } finally {
-          setIsSuggesting(false);
-      }
-  };
-
   return (
     <Sheet open={open} onOpenChange={(isOpen) => {
         onOpenChange(isOpen);
@@ -208,12 +203,12 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
             {stickerFile && (
               <div className="space-y-2 rounded-md border p-4 bg-secondary/50">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                 {isExtracting ? (
+                 {(isExtracting || isSuggesting) ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                       <Scan className="h-4 w-4" />
                   )}
-                <span className="font-medium text-foreground">{isExtracting ? "Extracting..." : "Details extracted!"}</span>
+                <span className="font-medium text-foreground">{isExtracting ? "Extracting..." : isSuggesting ? "Suggesting schedule..." : "Details extracted!"}</span>
                 </div>
               </div>
             )}
@@ -387,21 +382,11 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
                 name="maintenanceSchedule"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex items-center justify-between">
-                      <FormLabel>Maintenance Schedule</FormLabel>
-                      <Button type="button" variant="ghost" size="sm" onClick={handleSuggestSchedule} disabled={isSuggesting}>
-                        {isSuggesting ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ): (
-                          <Wand2 className="mr-2 h-4 w-4" />
-                        )}
-                        Suggest
-                      </Button>
-                    </div>
+                    <FormLabel>Maintenance Schedule</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g. Every 6 months" {...field} />
                     </FormControl>
-                    <FormDescription>Describe the maintenance frequency, or let AI suggest one.</FormDescription>
+                    <FormDescription>Describe the maintenance frequency. This is auto-suggested.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
