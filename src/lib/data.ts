@@ -1,38 +1,66 @@
-
-import { collection, addDoc, getDocs, doc, getDoc, deleteDoc, query, where, orderBy } from 'firebase/firestore';
-import { db, auth } from './firebase';
+import { format } from 'date-fns';
 import type { Appliance } from './types';
 
-const getAppliancesCollection = () => {
-    const user = auth.currentUser;
-    if (!user) throw new Error("User not authenticated");
-    return collection(db, 'users', user.uid, 'appliances');
-}
+// In-memory store for local development
+let appliances: Appliance[] = [
+    {
+        id: '1',
+        name: 'Kitchen Fridge',
+        type: 'refrigerator',
+        brand: 'Samsung',
+        model: 'RF28R7351SR',
+        serial: 'DA42-00234B',
+        purchaseDate: '2022-01-15',
+        installationDate: '2022-01-20',
+        stickerImageUrl: 'https://placehold.co/600x400.png',
+        maintenanceSchedule: 'Replace water filter every 6 months',
+    },
+    {
+        id: '2',
+        name: 'Living Room TV',
+        type: 'tv',
+        brand: 'LG',
+        model: 'OLED65C1PUB',
+        serial: '109INWDEE769',
+        purchaseDate: '2021-05-20',
+        installationDate: '2021-05-22',
+        stickerImageUrl: 'https://placehold.co/600x400.png',
+        maintenanceSchedule: 'Annually',
+    },
+];
+
+let nextId = 3;
+
+// Simulate network delay
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const getAppliances = async (): Promise<Appliance[]> => {
-    const appliancesCol = getAppliancesCollection();
-    const q = query(appliancesCol, orderBy('purchaseDate', 'desc'));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Appliance));
+    await sleep(500);
+    // Return a copy to prevent direct mutation
+    return [...appliances].sort((a, b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime());
 }
 
 export const getApplianceById = async (id: string): Promise<Appliance | null> => {
-    const user = auth.currentUser;
-    if (!user) throw new Error("User not authenticated");
-    const docRef = doc(db, 'users', user.uid, 'appliances', id);
-    const docSnap = await getDoc(docRef);
-    return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } as Appliance : null;
+    await sleep(300);
+    const appliance = appliances.find(a => a.id === id);
+    return appliance ? { ...appliance } : null;
 }
 
 export const addAppliance = async (applianceData: Omit<Appliance, 'id'>): Promise<Appliance> => {
-    const appliancesCol = getAppliancesCollection();
-    const docRef = await addDoc(appliancesCol, applianceData);
-    return { id: docRef.id, ...applianceData };
+    await sleep(700);
+    const newAppliance: Appliance = {
+        id: (nextId++).toString(),
+        ...applianceData,
+    };
+    appliances = [newAppliance, ...appliances];
+    return { ...newAppliance };
 }
 
 export const deleteAppliance = async (id: string): Promise<void> => {
-    const user = auth.currentUser;
-    if (!user) throw new Error("User not authenticated");
-    const docRef = doc(db, 'users', user.uid, 'appliances', id);
-    await deleteDoc(docRef);
+    await sleep(400);
+    const initialLength = appliances.length;
+    appliances = appliances.filter(a => a.id !== id);
+    if (appliances.length === initialLength) {
+        throw new Error("Appliance not found");
+    }
 };
