@@ -22,7 +22,7 @@ const GetPartDetailsOutputSchema = z.object({
   description: z.string().describe('A detailed, one-paragraph description of the part and its function.'),
   failureSymptoms: z.string().describe('A markdown-formatted, bulleted list of 3-5 common symptoms of failure. Each symptom should be on its own line.'),
   purchaseUrl: z.string().describe("A fictional URL to a product page where the user could purchase this part."),
-  tutorialUrl: z.string().describe("A fictional, but realistic-looking, YouTube URL for a video tutorial on how to replace this specific part."),
+  tutorialUrl: z.string().describe("A real YouTube URL for a video tutorial on how to replace this specific part. If no relevant video can be found, this should be an empty string."),
 });
 export type GetPartDetailsOutput = z.infer<typeof GetPartDetailsOutputSchema>;
 
@@ -41,7 +41,7 @@ Provide the following information:
 2.  **description**: A detailed, one-paragraph description of the part and its primary function within the appliance.
 3.  **failureSymptoms**: A markdown-formatted list of 3-5 common symptoms that indicate this part might be failing. Each symptom must be on a new line and start with a bullet point (*).
 4.  **purchaseUrl**: A fictional, but realistic-looking, 'example.com' URL for a product page where the user could purchase this specific part. For instance, 'https://parts.example.com/{{{applianceModel}}}/{{{partName}}}'.
-5.  **tutorialUrl**: A fictional, but realistic-looking, YouTube URL for a video tutorial showing how to replace this specific '{{{partName}}}' for the '{{{applianceModel}}}'. For example, 'https://www.youtube.com/watch?v=fictional_video_id'.
+5.  **tutorialUrl**: Search the web to find a real YouTube URL for a video tutorial showing how to replace this specific '{{{partName}}}' for the '{{{applianceModel}}}'. If you cannot find a relevant video, return an empty string.
 `,
 });
 

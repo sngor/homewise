@@ -116,13 +116,15 @@ export default function PartDetailPage() {
     }
     
     const getYouTubeVideoId = (url: string) => {
+        if (!url) return null;
         try {
             const urlObj = new URL(url);
             if (urlObj.hostname === 'youtu.be') {
                 return urlObj.pathname.slice(1);
             }
             if (urlObj.hostname.includes('youtube.com')) {
-                return urlObj.searchParams.get('v');
+                const videoId = urlObj.searchParams.get('v');
+                if (videoId) return videoId;
             }
             return null;
         } catch (error) {
