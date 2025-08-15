@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { getApplianceById } from '@/lib/data';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -18,20 +19,24 @@ import { Separator } from '@/components/ui/separator';
 import { MaintenanceCard } from '@/components/maintenance-card';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function ApplianceDetailPage({ params }: { params: { id: string } }) {
+export default function ApplianceDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
   const [appliance, setAppliance] = useState<Appliance | null | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!id) return;
+    
     const fetchAppliance = async () => {
       setIsLoading(true);
-      const fetchedAppliance = await getApplianceById(params.id);
+      const fetchedAppliance = await getApplianceById(id);
       setAppliance(fetchedAppliance);
       setIsLoading(false);
     };
 
     fetchAppliance();
-  }, [params.id]);
+  }, [id]);
 
 
   if (isLoading || appliance === undefined) {
@@ -187,5 +192,3 @@ export default function ApplianceDetailPage({ params }: { params: { id: string }
     </div>
   );
 }
-
-    
