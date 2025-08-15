@@ -89,37 +89,37 @@ export default function Home() {
         ) : appliances.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {appliances.map((appliance) => (
-              <Card key={appliance.id} className="flex flex-col hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-secondary rounded-md">
-                        <ApplianceIcon type={appliance.type} className="w-6 h-6 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">{appliance.name}</CardTitle>
-                        <CardDescription>{appliance.brand} {appliance.model}</CardDescription>
+              <Link key={appliance.id} href={`/appliance/${appliance.id}`} className="block hover:shadow-lg transition-shadow rounded-lg">
+                <Card className="flex flex-col h-full">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-secondary rounded-md">
+                          <ApplianceIcon type={appliance.type} className="w-6 h-6 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">{appliance.name}</CardTitle>
+                          <CardDescription>{appliance.brand} {appliance.model}</CardDescription>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                   <div className="relative aspect-video w-full">
-                     <Image 
-                       src={appliance.stickerImageUrl || "https://placehold.co/600x400.png"} 
-                       alt={`${appliance.name} sticker`}
-                       fill
-                       className="rounded-md object-cover border"
-                       data-ai-hint="appliance sticker"
-                     />
-                   </div>
-                </CardContent>
-                <CardFooter className="flex justify-end gap-2">
-                  <Button asChild size="sm" className='flex-1 sm:flex-initial'>
-                    <Link href={`/appliance/${appliance.id}`}>View Details</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                     <div className="relative aspect-video w-full">
+                       <Image 
+                         src={appliance.stickerImageUrl || "https://placehold.co/600x400.png"} 
+                         alt={`${appliance.name} sticker`}
+                         fill
+                         className="rounded-md object-cover border"
+                         data-ai-hint="appliance sticker"
+                       />
+                     </div>
+                  </CardContent>
+                  <CardFooter>
+                    <p className="text-sm text-muted-foreground">Purchased on {new Date(appliance.purchaseDate).toLocaleDateString()}</p>
+                  </CardFooter>
+                </Card>
+              </Link>
             ))}
           </div>
         ) : (
