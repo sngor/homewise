@@ -2,11 +2,11 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { getApplianceById } from '@/lib/data';
+import { useRouter, useParams } from 'next/navigation';
+import { getApplianceById, deleteAppliance } from '@/lib/data';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Calendar, Wrench, Info, HardHat, Phone, Loader2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Wrench, Info, HardHat, Phone, Loader2, Trash2 } from 'lucide-react';
 import type { Appliance } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
@@ -18,12 +18,26 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { MaintenanceCard } from '@/components/maintenance-card';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { useToast } from '@/hooks/use-toast';
 
 export default function ApplianceDetailPage() {
   const params = useParams();
+  const router = useRouter();
+  const { toast } = useToast();
   const id = params.id as string;
   const [appliance, setAppliance] = useState<Appliance | null | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -37,6 +51,27 @@ export default function ApplianceDetailPage() {
 
     fetchAppliance();
   }, [id]);
+
+  const handleDelete = async () => {
+    if (!appliance) return;
+
+    try {
+      await deleteAppliance(appliance.id);
+      toast({
+        title: "Appliance Deleted",
+        description: `${appliance.name} has been removed.`,
+      });
+      router.push('/');
+    } catch(e) {
+      toast({
+        variant: "destructive",
+        title: "Failed to Delete Appliance",
+        description: e instanceof Error ? e.message : "An unknown error occurred.",
+      });
+    } finally {
+        setIsDeleting(false);
+    }
+  };
 
 
   if (isLoading || appliance === undefined) {
@@ -101,13 +136,18 @@ export default function ApplianceDetailPage() {
   ];
 
   return (
+    <>
     <div className="p-4 md:p-6">
-      <div className="mb-4">
+      <div className="flex items-center justify-between mb-4">
         <Button variant="outline" asChild>
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Inventory
           </Link>
+        </Button>
+        <Button variant="destructive" onClick={() => setIsDeleting(true)}>
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
         </Button>
       </div>
 
@@ -192,5 +232,23 @@ export default function ApplianceDetailPage() {
         </TabsContent>
       </Tabs>
     </div>
+    <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
+        <AlertDialogContent>
+        <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete the
+            appliance &quot;{appliance?.name}&quot;.
+            </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>
+            Continue
+            </AlertDialogAction>
+        </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

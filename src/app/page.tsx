@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -9,18 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AddApplianceSheet } from '@/components/add-appliance-sheet';
 import type { Appliance } from '@/lib/types';
-import { getAppliances, addAppliance, deleteAppliance } from '@/lib/data';
+import { getAppliances, addAppliance } from '@/lib/data';
 import { ApplianceIcon } from '@/components/appliance-icon';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -30,7 +21,6 @@ export default function Home() {
   const [appliances, setAppliances] = useState<Appliance[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [applianceToDelete, setApplianceToDelete] = useState<Appliance | null>(null);
 
   const isMobile = useIsMobile();
   const { toast } = useToast();
@@ -69,27 +59,6 @@ export default function Home() {
         title: "Failed to Add Appliance",
         description: e instanceof Error ? e.message : "An unknown error occurred.",
       })
-    }
-  };
-
-  const handleDeleteAppliance = async () => {
-    if (!applianceToDelete) return;
-    
-    try {
-      await deleteAppliance(applianceToDelete.id);
-      setAppliances(prev => prev.filter(app => app.id !== applianceToDelete.id));
-      toast({
-        title: "Appliance Deleted",
-        description: `${applianceToDelete.name} has been removed.`,
-      })
-    } catch(e) {
-      toast({
-        variant: "destructive",
-        title: "Failed to Delete Appliance",
-        description: e instanceof Error ? e.message : "An unknown error occurred.",
-      })
-    } finally {
-        setApplianceToDelete(null);
     }
   };
 
@@ -145,11 +114,7 @@ export default function Home() {
                      />
                    </div>
                 </CardContent>
-                <CardFooter className="flex justify-between gap-2">
-                  <Button variant="destructive" size={isMobile ? "icon" : "sm"} onClick={() => setApplianceToDelete(appliance)}>
-                    <Trash2 className="h-4 w-4" />
-                    <span className="sr-only sm:not-sr-only sm:ml-2">Delete</span>
-                  </Button>
+                <CardFooter className="flex justify-end gap-2">
                   <Button asChild size="sm" className='flex-1 sm:flex-initial'>
                     <Link href={`/appliance/${appliance.id}`}>View Details</Link>
                   </Button>
@@ -170,23 +135,6 @@ export default function Home() {
           </div>
         )}
       </main>
-      <AlertDialog open={!!applianceToDelete} onOpenChange={(open) => !open && setApplianceToDelete(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the
-                appliance.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setApplianceToDelete(null)}>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteAppliance}>
-                Continue
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
     </div>
   );
 }
