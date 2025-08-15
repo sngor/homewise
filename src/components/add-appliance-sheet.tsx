@@ -41,7 +41,7 @@ import { useToast } from "@/hooks/use-toast"
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
-  type: z.enum(['refrigerator', 'oven', 'washer', 'dishwasher', 'tv', 'ac', 'other']),
+  type: z.enum(['refrigerator', 'oven', 'washer', 'dishwasher', 'tv', 'ac', 'microwave', 'water-heater', 'other']),
   model: z.string().min(2, "Model number is required."),
   serial: z.string().min(2, "Serial number is required."),
   purchaseDate: z.date({
@@ -123,11 +123,9 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
   }
 
   useEffect(() => {
-    if (stickerFile) {
-        handleExtractDetails(stickerFile);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // This effect is no longer needed to trigger extraction, 
+    // but we can keep it in case there's a need to handle a pre-set file.
+  }, [stickerFile]);
 
 
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -202,7 +200,7 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
                   </label>
                 </Button>
               </FormControl>
-              <FormDescription>Upload a picture of the appliance sticker. Image will only be shown for this session.</FormDescription>
+              <FormDescription>Upload a picture of the appliance sticker. Information will be extracted automatically.</FormDescription>
             </FormItem>
 
             {stickerFile && (
@@ -250,6 +248,8 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
                       <SelectItem value="dishwasher">Dishwasher</SelectItem>
                       <SelectItem value="tv">TV</SelectItem>
                       <SelectItem value="ac">Air Conditioner</SelectItem>
+                      <SelectItem value="microwave">Microwave</SelectItem>
+                      <SelectItem value="water-heater">Water Heater</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
@@ -313,6 +313,7 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
+                        defaultMonth={field.value}
                         disabled={(date) =>
                           date > new Date() || date < new Date("1900-01-01")
                         }
