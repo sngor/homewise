@@ -14,6 +14,12 @@ import {
   type SuggestMaintenanceScheduleInput,
   type SuggestMaintenanceScheduleOutput,
 } from '@/ai/flows/suggest-maintenance-schedule';
+import {
+  findRepairServices,
+  type FindRepairServicesInput,
+  type FindRepairServicesOutput,
+} from '@/ai/flows/find-repair-services';
+
 
 export async function getCompatibleParts(
   input: FindCompatiblePartsInput
@@ -65,5 +71,20 @@ export async function getMaintenanceScedule(
     throw new Error(
       'An unknown error occurred while suggesting the schedule.'
     );
+  }
+}
+
+export async function getRepairServices(
+  input: FindRepairServicesInput
+): Promise<FindRepairServicesOutput> {
+  try {
+    const result = await findRepairServices(input);
+    return result;
+  } catch (error) {
+    console.error('Error finding repair services:', error);
+    if (error instanceof Error) {
+      throw new Error(`AI service finder failed: ${error.message}`);
+    }
+    throw new Error('An unknown error occurred while finding repair services.');
   }
 }

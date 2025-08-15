@@ -1,13 +1,14 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { getApplianceById, deleteAppliance } from '@/lib/data';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, Calendar, Wrench, Info, HardHat, Phone, Loader2, Trash2 } from 'lucide-react';
 import type { Appliance } from '@/lib/types';
+import { getRepairServices } from '@/app/actions';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,6 +30,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+type RepairService = {
+  name: string;
+  phone: string;
+  rating: number;
+};
 
 export default function ApplianceDetailPage() {
   const params = useParams();
@@ -38,6 +46,10 @@ export default function ApplianceDetailPage() {
   const [appliance, setAppliance] = useState<Appliance | null | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  const [repairServices, setRepairServices] = useState<RepairService[]>([]);
+  const [isLoadingServices, setIsLoadingServices] = useState(false);
+  const [serviceError, setServiceError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -72,6 +84,22 @@ export default function ApplianceDetailPage() {
         setIsDeleting(false);
     }
   };
+
+  const handleFindServices = useCallback(async () => {
+    if (!appliance || repairServices.length > 0) return;
+
+    setIsLoadingServices(true);
+    setServiceError(null);
+    try {
+      const result = await getRepairServices({ applianceType: appliance.type });
+      setRepairServices(result.services);
+    } catch(e) {
+       const error = e instanceof Error ? e.message : "Could not find services.";
+       setServiceError(error);
+    } finally {
+      setIsLoadingServices(false);
+    }
+  }, [appliance, repairServices]);
 
 
   if (isLoading || appliance === undefined) {
@@ -129,12 +157,6 @@ export default function ApplianceDetailPage() {
     { label: "Maintenance Schedule", value: appliance.maintenanceSchedule },
   ];
 
-  const repairServices = [
-    { name: "Local Appliance Repair", phone: "123-456-7890", rating: 4.5 },
-    { name: "FixIt Fast", phone: "987-654-3210", rating: 4.8 },
-    { name: "ProLine Service", phone: "555-123-4567", rating: 4.2 },
-  ];
-
   return (
     <>
     <div className="p-4 md:p-6">
@@ -167,7 +189,7 @@ export default function ApplianceDetailPage() {
         <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto sm:h-10">
           <TabsTrigger value="details"><Info className="mr-2 h-4 w-4" />Details</TabsTrigger>
           <TabsTrigger value="parts"><Wrench className="mr-2 h-4 w-4" />Parts</TabsTrigger>
-          <TabsTrigger value="maintenance"><Calendar className="mr-2 h-4 w-4" />Maintenance</TabsTrigger>
+          <TabsTrigger value="maintenance" onClick={handleFindServices}><Calendar className="mr-2 h-4 w-4" />Maintenance</TabsTrigger>
         </TabsList>
         <TabsContent value="details" className="mt-4">
           <Card>
@@ -210,22 +232,40 @@ export default function ApplianceDetailPage() {
                     <CardTitle>Nearby Repair Services</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <ul className="space-y-3">
-                            {repairServices.map(service => (
-                                <li key={service.name} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-2 rounded-md hover:bg-secondary/50">
-                                    <div className="flex items-center gap-3">
-                                        <HardHat className="h-5 w-5 text-muted-foreground flex-shrink-0"/>
-                                        <div>
-                                            <p className="font-medium">{service.name}</p>
-                                            <p className="text-xs text-muted-foreground">Rating: {service.rating} / 5</p>
+                        {isLoadingServices && (
+                            <div className="flex items-center justify-center">
+                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                <span>Finding services...</span>
+                            </div>
+                        )}
+                        {serviceError && (
+                            <Alert variant="destructive">
+                                <Wrench className="h-4 w-4" />
+                                <AlertTitle>Error</AlertTitle>
+                                <AlertDescription>{serviceError}</AlertDescription>
+                            </Alert>
+                        )}
+                        {!isLoadingServices && !serviceError && repairServices.length > 0 && (
+                            <ul className="space-y-3">
+                                {repairServices.map(service => (
+                                    <li key={service.name} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-2 rounded-md hover:bg-secondary/50">
+                                        <div className="flex items-center gap-3">
+                                            <HardHat className="h-5 w-5 text-muted-foreground flex-shrink-0"/>
+                                            <div>
+                                                <p className="font-medium">{service.name}</p>
+                                                <p className="text-xs text-muted-foreground">Rating: {service.rating.toFixed(1)} / 5</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
-                                        <a href={`tel:${service.phone}`}><Phone className="mr-2 h-3 w-3" /> Call</a>
-                                    </Button>
-                                </li>
-                            ))}
-                        </ul>
+                                        <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
+                                            <a href={`tel:${service.phone}`}><Phone className="mr-2 h-3 w-3" /> Call</a>
+                                        </Button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                         {!isLoadingServices && !serviceError && repairServices.length === 0 && (
+                             <p className="text-sm text-muted-foreground">Click the "Maintenance" tab again to search for services.</p>
+                         )}
                     </CardContent>
                 </Card>
             </div>
