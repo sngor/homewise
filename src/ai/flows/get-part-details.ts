@@ -20,7 +20,7 @@ export type GetPartDetailsInput = z.infer<typeof GetPartDetailsInputSchema>;
 const GetPartDetailsOutputSchema = z.object({
   partName: z.string().describe('The name of the part.'),
   description: z.string().describe('A detailed description of the part, its function, and common symptoms of failure. Formatted as Markdown.'),
-  purchaseUrl: z.string().url().describe('A fictional URL to a product page where the user could purchase this part.'),
+  purchaseUrl: z.string().describe('A fictional URL to a product page where the user could purchase this part.'),
 });
 export type GetPartDetailsOutput = z.infer<typeof GetPartDetailsOutputSchema>;
 
