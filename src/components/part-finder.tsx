@@ -9,10 +9,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "./ui/badge";
 
 type PartFinderProps = {
+  brand: string;
   model: string;
 };
 
-export function PartFinder({ model }: PartFinderProps) {
+export function PartFinder({ brand, model }: PartFinderProps) {
   const [parts, setParts] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +23,7 @@ export function PartFinder({ model }: PartFinderProps) {
     setError(null);
     setParts([]);
     
-    const result = await getCompatibleParts({ applianceModel: model });
+    const result = await getCompatibleParts({ applianceBrand: brand, applianceModel: model });
 
     if (result && result.length > 0) {
       setParts(result);
@@ -37,7 +38,7 @@ export function PartFinder({ model }: PartFinderProps) {
     <Card>
       <CardHeader>
         <CardTitle>AI-Powered Part Finder</CardTitle>
-        <CardDescription>Find compatible replacement parts for model: <strong>{model}</strong></CardDescription>
+        <CardDescription>Find compatible replacement parts for <strong>{brand} {model}</strong></CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Button onClick={handleFindParts} disabled={isLoading} className="w-full sm:w-auto">

@@ -22,6 +22,7 @@ export type ExtractApplianceDetailsInput = z.infer<typeof ExtractApplianceDetail
 const ExtractApplianceDetailsOutputSchema = z.object({
   name: z.string().describe('A suggested name for the appliance, e.g., "Kitchen Fridge".'),
   type: z.enum(['refrigerator', 'oven', 'washer', 'dishwasher', 'tv', 'ac', 'microwave', 'water-heater', 'other']).describe('The type of the appliance.'),
+  brand: z.string().describe('The brand or manufacturer of the appliance. If not found, return an empty string.'),
   model: z.string().describe('The model number of the appliance. If not found, return an empty string.'),
   serial: z.string().describe('The serial number of the appliance. If not found, return an empty string.'),
 });
@@ -35,9 +36,9 @@ const prompt = ai.definePrompt({
   name: 'extractApplianceDetailsPrompt',
   input: {schema: ExtractApplianceDetailsInputSchema},
   output: {schema: ExtractApplianceDetailsOutputSchema},
-  prompt: `Analyze the provided image of an appliance sticker and extract the appliance type, model number, and serial number. Also, suggest a descriptive name for the appliance (e.g., "Kitchen Fridge").
+  prompt: `Analyze the provided image of an appliance sticker and extract the appliance type, brand, model number, and serial number. Also, suggest a descriptive name for the appliance (e.g., "Kitchen Fridge").
 
-If a model or serial number cannot be found, return an empty string for that field.
+If a brand, model or serial number cannot be found, return an empty string for that field.
 
 Image: {{media url=photoDataUri}}`,
 });

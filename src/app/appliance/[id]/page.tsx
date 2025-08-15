@@ -86,6 +86,7 @@ export default function ApplianceDetailPage() {
 
 
   const detailItems = [
+    { label: "Brand", value: appliance.brand },
     { label: "Model Number", value: appliance.model },
     { label: "Serial Number", value: appliance.serial },
     { label: "Purchase Date", value: new Date(appliance.purchaseDate).toLocaleDateString() },
@@ -158,7 +159,7 @@ export default function ApplianceDetailPage() {
           </Card>
         </TabsContent>
         <TabsContent value="parts" className="mt-4">
-          <PartFinder model={appliance.model} />
+          <PartFinder model={appliance.model} brand={appliance.brand} />
         </TabsContent>
         <TabsContent value="maintenance" className="mt-4">
             <div className="grid gap-4 md:grid-cols-2">

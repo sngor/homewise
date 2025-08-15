@@ -42,6 +42,7 @@ import { useToast } from "@/hooks/use-toast"
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   type: z.enum(['refrigerator', 'oven', 'washer', 'dishwasher', 'tv', 'ac', 'microwave', 'water-heater', 'other']),
+  brand: z.string().min(2, "Brand is required."),
   model: z.string().min(2, "Model number is required."),
   serial: z.string().min(2, "Serial number is required."),
   purchaseDate: z.date({
@@ -66,6 +67,7 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      brand: "",
       model: "",
       serial: "",
       purchaseDate: new Date(),
@@ -86,6 +88,7 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
             const result = await getApplianceDetailsFromImage({ photoDataUri });
             form.setValue("name", result.name);
             form.setValue("type", result.type);
+            form.setValue("brand", result.brand);
             form.setValue("model", result.model);
             form.setValue("serial", result.serial);
             toast({
@@ -121,12 +124,6 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
       handleExtractDetails(file);
     }
   }
-
-  useEffect(() => {
-    // This effect is no longer needed to trigger extraction, 
-    // but we can keep it in case there's a need to handle a pre-set file.
-  }, [stickerFile]);
-
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     onApplianceAdded({
@@ -253,6 +250,19 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="brand"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Brand / Manufacturer</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Samsung" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

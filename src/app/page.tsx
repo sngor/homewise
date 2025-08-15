@@ -129,7 +129,7 @@ export default function Home() {
                       </div>
                       <div>
                         <CardTitle className="text-lg">{appliance.name}</CardTitle>
-                        <CardDescription>Model: {appliance.model}</CardDescription>
+                        <CardDescription>{appliance.brand} {appliance.model}</CardDescription>
                       </div>
                     </div>
                   </div>
