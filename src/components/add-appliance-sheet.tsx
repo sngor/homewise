@@ -121,6 +121,12 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
                 title: "Manual Found",
                 description: "An online user manual has been linked.",
             });
+        } else {
+             toast({
+                title: "Manual Not Found",
+                description: "Could not find an online manual for this model.",
+                variant: "default",
+            });
         }
     } catch (e) {
         const error = e instanceof Error ? e.message : "Could not find a manual.";
