@@ -21,6 +21,7 @@ const RepairServiceSchema = z.object({
     name: z.string().describe("The name of the repair service company."),
     phone: z.string().describe("The phone number of the service."),
     rating: z.number().describe("The user rating of the service, out of 5."),
+    address: z.string().describe("The full, single-line physical address of the service (e.g., 123 Main St, Anytown, USA 12345)."),
 });
 
 const FindRepairServicesOutputSchema = z.object({
@@ -43,7 +44,7 @@ const prompt = ai.definePrompt({
   The user is located at latitude: {{{latitude}}} and longitude: {{{longitude}}}. Please provide services that would be realistically near this location.
   {{/if}}
   
-  Please provide a list of 3 to 5 highly-rated, fictional appliance repair service companies that would service this type of appliance. For each service, provide a realistic name, a US-based phone number, and a user rating between 4.0 and 5.0.`,
+  Please provide a list of 3 to 5 highly-rated, fictional appliance repair service companies that would service this type of appliance. For each service, provide a realistic name, a US-based phone number, a user rating between 4.0 and 5.0, and a realistic, single-line physical address.`,
 });
 
 const findRepairServicesFlow = ai.defineFlow(
