@@ -299,7 +299,7 @@ export default function ApplianceDetailPage() {
             <AlertDialogDescription>
             This action cannot be undone. This will permanently delete the
             appliance &quot;{appliance?.name}&quot;.
-            </被告Description>
+            </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
