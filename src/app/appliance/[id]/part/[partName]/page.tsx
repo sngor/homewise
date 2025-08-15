@@ -9,7 +9,7 @@ import { getSinglePartDetails } from '@/app/actions';
 import type { Appliance } from '@/lib/types';
 import type { GetPartDetailsOutput } from '@/ai/flows/get-part-details';
 
-import { ArrowLeft, ExternalLink, ShoppingCart, Wrench, AlertTriangle, Info, Youtube } from 'lucide-react';
+import { ArrowLeft, ExternalLink, ShoppingCart, Wrench, AlertTriangle, Info, Youtube, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -114,6 +114,24 @@ export default function PartDetailPage() {
             </div>
         );
     }
+    
+    const getYouTubeVideoId = (url: string) => {
+        try {
+            const urlObj = new URL(url);
+            if (urlObj.hostname === 'youtu.be') {
+                return urlObj.pathname.slice(1);
+            }
+            if (urlObj.hostname.includes('youtube.com')) {
+                return urlObj.searchParams.get('v');
+            }
+            return null;
+        } catch (error) {
+            console.error("Invalid URL for YouTube video", error);
+            return null;
+        }
+    };
+    
+    const videoId = getYouTubeVideoId(partDetails.tutorialUrl);
 
     const renderMarkdownList = (text: string) => {
         return (
@@ -180,28 +198,40 @@ export default function PartDetailPage() {
                                 </div>
                             </CardContent>
                         </Card>
+                        {videoId && (
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-lg flex items-center gap-2"><Video className="h-5 w-5"/> Installation Tutorial</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="aspect-video">
+                                        <iframe
+                                            className="w-full h-full rounded-lg"
+                                            src={`https://www.youtube.com/embed/${videoId}`}
+                                            title="YouTube video player"
+                                            frameBorder="0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        ></iframe>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
                     </div>
 
                     <Separator />
                     
                     <div className="flex flex-col sm:flex-row gap-4">
-                        <Button asChild size="lg" className="w-full sm:w-auto">
+                        <Button asChild size="lg" className="w-full">
                             <a href={partDetails.purchaseUrl} target="_blank" rel="noopener noreferrer">
                                 <ShoppingCart className="mr-2 h-5 w-5" />
                                 Find at Online Store
                                 <ExternalLink className="ml-2 h-4 w-4" />
                             </a>
                         </Button>
-                         <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
-                            <a href={partDetails.tutorialUrl} target="_blank" rel="noopener noreferrer">
-                                <Youtube className="mr-2 h-5 w-5" />
-                                Watch Tutorial
-                                <ExternalLink className="ml-2 h-4 w-4" />
-                            </a>
-                        </Button>
                     </div>
                      <p className="text-xs text-muted-foreground mt-2 text-center sm:text-left">
-                           Note: These are sample links for demonstration purposes.
+                           Note: Purchase and tutorial links are samples for demonstration purposes.
                         </p>
 
                 </div>
