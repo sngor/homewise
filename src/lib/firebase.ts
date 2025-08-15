@@ -12,12 +12,12 @@ import { config } from 'dotenv';
 config();
 
 const firebaseConfig = {
-  projectId: "homewise-l57cg",
-  appId: "1:1020422631301:web:fd2a776c1ba0fd08809eec",
-  storageBucket: "homewise-l57cg.appspot.com",
-  apiKey: "YOUR_API_KEY", // Replace with your actual API key if you re-enable
-  authDomain: "homewise-l57cg.firebaseapp.com",
-  messagingSenderId: "1020422631301"
+  "projectId": "homewise-l57cg",
+  "appId": "1:1020422631301:web:fd2a776c1ba0fd08809eec",
+  "storageBucket": "homewise-l57cg.firebasestorage.app",
+  "apiKey": "AIzaSyAYi3MIZeD_vHCJJDgDduIlSg7h5FrFDT4",
+  "authDomain": "homewise-l57cg.firebaseapp.com",
+  "messagingSenderId": "1020422631301"
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
