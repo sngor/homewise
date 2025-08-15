@@ -41,7 +41,7 @@ import { useToast } from "@/hooks/use-toast"
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
-  type: z.enum(['refrigerator', 'oven', 'washer', 'dishwasher', 'tv', 'ac', 'microwave', 'water-heater', 'other']),
+  type: z.enum(['refrigerator', 'oven', 'washer', 'dishwasher', 'tv', 'ac', 'microwave', 'water-heater', 'dryer', 'furnace', 'garbage-disposal', 'range-hood', 'other']),
   brand: z.string().min(2, "Brand is required."),
   model: z.string().min(2, "Model number is required."),
   serial: z.string().min(2, "Serial number is required."),
@@ -242,11 +242,15 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
                       <SelectItem value="refrigerator">Refrigerator</SelectItem>
                       <SelectItem value="oven">Oven</SelectItem>
                       <SelectItem value="washer">Washer</SelectItem>
+                      <SelectItem value="dryer">Dryer</SelectItem>
                       <SelectItem value="dishwasher">Dishwasher</SelectItem>
                       <SelectItem value="tv">TV</SelectItem>
                       <SelectItem value="ac">Air Conditioner</SelectItem>
+                      <SelectItem value="furnace">Furnace</SelectItem>
                       <SelectItem value="microwave">Microwave</SelectItem>
                       <SelectItem value="water-heater">Water Heater</SelectItem>
+                      <SelectItem value="garbage-disposal">Garbage Disposal</SelectItem>
+                      <SelectItem value="range-hood">Range Hood</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
