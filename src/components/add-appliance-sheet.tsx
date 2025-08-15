@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { format } from "date-fns"
 import { CalendarIcon, Upload, Scan, Loader2, Wand2 } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -73,32 +73,13 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // For local session, we don't need to handle file uploads,
-    // so we just pass form values. The sticker image won't be saved.
-    onApplianceAdded({
-      ...values,
-      type: values.type || 'other',
-      purchaseDate: format(values.purchaseDate, "yyyy-MM-dd"),
-      stickerImageUrl: stickerFile ? URL.createObjectURL(stickerFile) : undefined,
-    });
-    form.reset();
-    setStickerFile(null);
-  }
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setStickerFile(e.target.files[0]);
-    }
-  }
-
-  const handleExtractDetails = async () => {
-    if (!stickerFile) return;
+  const handleExtractDetails = async (file: File) => {
+    if (!file) return;
 
     setIsExtracting(true);
 
     const reader = new FileReader();
-    reader.readAsDataURL(stickerFile);
+    reader.readAsDataURL(file);
     reader.onload = async () => {
         const photoDataUri = reader.result as string;
         try {
@@ -131,6 +112,33 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
         });
         setIsExtracting(false);
     };
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      const file = e.target.files[0];
+      setStickerFile(file);
+      handleExtractDetails(file);
+    }
+  }
+
+  useEffect(() => {
+    if (stickerFile) {
+        handleExtractDetails(stickerFile);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    onApplianceAdded({
+      ...values,
+      type: values.type || 'other',
+      purchaseDate: format(values.purchaseDate, "yyyy-MM-dd"),
+      stickerImageUrl: stickerFile ? URL.createObjectURL(stickerFile) : undefined,
+    });
+    form.reset();
+    setStickerFile(null);
   }
 
   const handleSuggestSchedule = async () => {
@@ -199,15 +207,14 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
 
             {stickerFile && (
               <div className="space-y-2 rounded-md border p-4 bg-secondary/50">
-                <p className="text-sm text-muted-foreground">Selected: <span className="font-medium text-foreground">{stickerFile.name}</span></p>
-                <Button type="button" variant="secondary" onClick={handleExtractDetails} className="w-full" disabled={isExtracting}>
-                  {isExtracting ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                 {isExtracting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                      <Scan className="mr-2 h-4 w-4" />
+                      <Scan className="h-4 w-4" />
                   )}
-                  {isExtracting ? "Extracting..." : "Extract Details from Image"}
-                </Button>
+                <span className="font-medium text-foreground">{isExtracting ? "Extracting..." : "Details extracted!"}</span>
+                </div>
               </div>
             )}
 
