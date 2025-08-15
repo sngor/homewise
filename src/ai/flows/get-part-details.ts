@@ -23,6 +23,7 @@ const GetPartDetailsOutputSchema = z.object({
   failureSymptoms: z.string().describe('A markdown-formatted, bulleted list of 3-5 common symptoms of failure. Each symptom should be on its own line.'),
   purchaseUrl: z.string().describe("A fictional URL to a product page where the user could purchase this part."),
   tutorialUrl: z.string().describe("A real YouTube URL for a video tutorial on how to replace this specific part. If no relevant video can be found, this should be an empty string."),
+  installationInstructions: z.string().describe("A markdown-formatted, numbered list of step-by-step instructions on how to replace the part. Each step must be on a new line and start with a number followed by a period (e.g., '1. Unplug the appliance.')."),
 });
 export type GetPartDetailsOutput = z.infer<typeof GetPartDetailsOutputSchema>;
 
@@ -34,7 +35,7 @@ const prompt = ai.definePrompt({
   name: 'getPartDetailsPrompt',
   input: {schema: GetPartDetailsInputSchema},
   output: {schema: GetPartDetailsOutputSchema},
-  prompt: `You are an expert appliance part specialist. A user is asking for details about the part named '{{{partName}}}' for their appliance with model number '{{{applianceModel}}}'.
+  prompt: `You are an expert appliance repair technician. A user is asking for details about the part named '{{{partName}}}' for their appliance with model number '{{{applianceModel}}}'.
 
 Provide the following information:
 1.  **partName**: The name of the part.
@@ -42,6 +43,7 @@ Provide the following information:
 3.  **failureSymptoms**: A markdown-formatted list of 3-5 common symptoms that indicate this part might be failing. Each symptom must be on a new line and start with a bullet point (*).
 4.  **purchaseUrl**: A fictional, but realistic-looking, 'example.com' URL for a product page where the user could purchase this specific part. For instance, 'https://parts.example.com/{{{applianceModel}}}/{{{partName}}}'.
 5.  **tutorialUrl**: Search the web to find a real YouTube URL for a video tutorial showing how to replace this specific '{{{partName}}}' for the '{{{applianceModel}}}'. If you cannot find a relevant video, return an empty string.
+6.  **installationInstructions**: A detailed, step-by-step guide on how to replace this part. Format this as a markdown numbered list (e.g., "1. First step...\\n2. Second step..."). Be clear and concise.
 `,
 });
 

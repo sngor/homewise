@@ -9,7 +9,7 @@ import { getSinglePartDetails } from '@/app/actions';
 import type { Appliance } from '@/lib/types';
 import type { GetPartDetailsOutput } from '@/ai/flows/get-part-details';
 
-import { ArrowLeft, ExternalLink, ShoppingCart, Wrench, AlertTriangle, Info, Youtube, Video } from 'lucide-react';
+import { ArrowLeft, ExternalLink, ShoppingCart, Wrench, AlertTriangle, Info, Youtube, Video, ListOrdered } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -135,18 +135,21 @@ export default function PartDetailPage() {
     
     const videoId = getYouTubeVideoId(partDetails.tutorialUrl);
 
-    const renderMarkdownList = (text: string) => {
+    const renderMarkdownList = (text: string, ordered = false) => {
+        const ListComponent = ordered ? 'ol' : 'ul';
+        const listStyle = ordered ? 'list-decimal' : 'list-disc';
+        
         return (
-            <ul className="list-disc list-outside space-y-2 pl-5">
+            <ListComponent className={`${listStyle} list-outside space-y-2 pl-5`}>
                 {text.split('\n').map((line, index) => {
-                     // Remove markdown list characters like '*' or '-'
-                    const cleanLine = line.replace(/^[\s*-]+\s*/, '');
+                     // Remove markdown list characters like '*' or '-' or '1.'
+                    const cleanLine = line.replace(/^[\s*-]+\s*|^\d+\.\s*/, '');
                     if (cleanLine) {
                         return <li key={index}>{cleanLine}</li>;
                     }
                     return null;
                 })}
-            </ul>
+            </ListComponent>
         )
     }
 
@@ -200,6 +203,18 @@ export default function PartDetailPage() {
                                 </div>
                             </CardContent>
                         </Card>
+                        {partDetails.installationInstructions && (
+                             <Card>
+                                <CardHeader className="pb-2">
+                                   <CardTitle className="text-lg flex items-center gap-2"><ListOrdered className="h-5 w-5"/> How-To Guide</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-muted-foreground text-sm">
+                                    {renderMarkdownList(partDetails.installationInstructions, true)}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
                         {videoId && (
                             <Card>
                                 <CardHeader className="pb-2">
