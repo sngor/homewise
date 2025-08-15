@@ -9,7 +9,7 @@ import { getSinglePartDetails } from '@/app/actions';
 import type { Appliance } from '@/lib/types';
 import type { GetPartDetailsOutput } from '@/ai/flows/get-part-details';
 
-import { ArrowLeft, ExternalLink, ShoppingCart, Wrench, AlertTriangle, Info } from 'lucide-react';
+import { ArrowLeft, ExternalLink, ShoppingCart, Wrench, AlertTriangle, Info, Youtube } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -184,7 +184,7 @@ export default function PartDetailPage() {
 
                     <Separator />
                     
-                    <div>
+                    <div className="flex flex-col sm:flex-row gap-4">
                         <Button asChild size="lg" className="w-full sm:w-auto">
                             <a href={partDetails.purchaseUrl} target="_blank" rel="noopener noreferrer">
                                 <ShoppingCart className="mr-2 h-5 w-5" />
@@ -192,10 +192,17 @@ export default function PartDetailPage() {
                                 <ExternalLink className="ml-2 h-4 w-4" />
                             </a>
                         </Button>
-                        <p className="text-xs text-muted-foreground mt-2">
-                           Note: This is a sample link for demonstration purposes.
-                        </p>
+                         <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
+                            <a href={partDetails.tutorialUrl} target="_blank" rel="noopener noreferrer">
+                                <Youtube className="mr-2 h-5 w-5" />
+                                Watch Tutorial
+                                <ExternalLink className="ml-2 h-4 w-4" />
+                            </a>
+                        </Button>
                     </div>
+                     <p className="text-xs text-muted-foreground mt-2 text-center sm:text-left">
+                           Note: These are sample links for demonstration purposes.
+                        </p>
 
                 </div>
             </div>
