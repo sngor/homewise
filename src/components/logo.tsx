@@ -6,7 +6,7 @@ export function Logo() {
       <div className="p-2 bg-primary/20 rounded-lg">
         <Home className="w-5 h-5 text-primary" />
       </div>
-      <span className="font-headline">HomeWise</span>
+      <span className="font-bold">HomeWise</span>
     </div>
   );
 }

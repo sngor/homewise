@@ -1,4 +1,4 @@
-import { Thermometer, CookingPot, Waves, Wind, Microwave, Heater, Spline as DefaultApplianceIcon, Flame, Trash2, ChefHat } from 'lucide-react';
+import { Thermometer, CookingPot, Waves, Wind, Microwave, Heater, Spline as DefaultApplianceIcon, Flame, Trash2, ChefHat, Fan } from 'lucide-react';
 import type { Appliance } from '@/lib/types';
 
 export const ApplianceIcon = ({ type, className }: { type: Appliance['type'], className?: string }) => {
@@ -15,7 +15,7 @@ export const ApplianceIcon = ({ type, className }: { type: Appliance['type'], cl
     case 'dishwasher':
       return <Waves {...iconProps} />;
     case 'ac':
-      return <Wind {...iconProps} />;
+      return <Fan {...iconProps} />;
     case 'furnace':
         return <Flame {...iconProps} />;
     case 'microwave':

@@ -69,7 +69,7 @@ export default function Home() {
         onOpenChange={setIsSheetOpen}
         onApplianceAdded={handleAddAppliance}
       />
-      <header className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-4 p-4 md:p-6 border-b bg-secondary/50">
+      <header className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-4 p-4 md:p-6 border-b bg-card">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Home Inventory</h1>
           <p className="text-muted-foreground mt-1">Manage all your home appliances in one place.</p>
@@ -89,13 +89,13 @@ export default function Home() {
         ) : appliances.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {appliances.map((appliance) => (
-              <Link key={appliance.id} href={`/appliance/${appliance.id}`} className="block hover:shadow-lg transition-shadow rounded-lg">
-                <Card className="flex flex-col h-full">
+              <Link key={appliance.id} href={`/appliance/${appliance.id}`} className="block hover:shadow-lg transition-shadow rounded-lg group">
+                <Card className="flex flex-col h-full bg-card group-hover:border-primary/50 transition-all">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-secondary rounded-md">
-                          <ApplianceIcon type={appliance.type} className="w-6 h-6 text-muted-foreground" />
+                        <div className="p-2 bg-primary/10 rounded-md">
+                          <ApplianceIcon type={appliance.type} className="w-6 h-6 text-primary" />
                         </div>
                         <div>
                           <CardTitle className="text-lg">{appliance.name}</CardTitle>
@@ -123,7 +123,10 @@ export default function Home() {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-center p-8 border-2 border-dashed rounded-lg bg-secondary/50">
+          <div className="flex flex-col items-center justify-center h-full text-center p-8 border-2 border-dashed rounded-lg bg-card mt-6">
+            <div className="p-4 bg-primary/10 rounded-full mb-4">
+                <ApplianceIcon type="other" className="w-12 h-12 text-primary" />
+            </div>
             <h2 className="text-xl font-semibold">No Appliances Yet</h2>
             <p className="text-muted-foreground mt-2 mb-4 max-w-sm">
               Click the button below to add your first appliance and start managing your home inventory.
