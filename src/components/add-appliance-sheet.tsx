@@ -68,6 +68,7 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
       name: "",
       model: "",
       serial: "",
+      purchaseDate: new Date(),
       maintenanceSchedule: "",
     },
   })
