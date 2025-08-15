@@ -21,7 +21,7 @@ export type ExtractApplianceDetailsInput = z.infer<typeof ExtractApplianceDetail
 
 const ExtractApplianceDetailsOutputSchema = z.object({
   name: z.string().describe('A suggested name for the appliance, e.g., "Kitchen Fridge".'),
-  type: z.enum(['refrigerator', 'oven', 'washer', 'dishwasher', 'tv', 'ac', 'microwave', 'water-heater', 'dryer', 'furnace', 'garbage-disposal', 'range-hood', 'other']).describe('The type of the appliance.'),
+  type: z.enum(['refrigerator', 'oven', 'washer', 'dishwasher', 'ac', 'microwave', 'water-heater', 'dryer', 'furnace', 'garbage-disposal', 'range-hood', 'other']).describe('The type of the appliance.'),
   brand: z.string().describe('The brand or manufacturer of the appliance. If not found, return an empty string.'),
   model: z.string().describe('The model number of the appliance. If not found, return an empty string.'),
   serial: z.string().describe('The serial number of the appliance. If not found, return an empty string.'),
