@@ -3,17 +3,18 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getApplianceById } from '@/lib/data';
 import { getSinglePartDetails } from '@/app/actions';
 import type { Appliance } from '@/lib/types';
 import type { GetPartDetailsOutput } from '@/ai/flows/get-part-details';
 
-import { ArrowLeft, ExternalLink, ShoppingCart, Wrench } from 'lucide-react';
+import { ArrowLeft, ExternalLink, ShoppingCart, Wrench, AlertTriangle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 export default function PartDetailPage() {
     const params = useParams();
@@ -61,22 +62,20 @@ export default function PartDetailPage() {
     if (isLoading) {
         return (
             <div className="p-4 md:p-6 animate-pulse">
-                <div className="mb-4">
+                <div className="mb-6">
                     <Skeleton className="h-10 w-48" />
                 </div>
-                <header className="mb-6 space-y-2">
-                    <Skeleton className="h-8 w-3/4" />
-                    <Skeleton className="h-5 w-1/2" />
-                </header>
-                <Card>
-                    <CardHeader>
-                        <Skeleton className="h-7 w-40" />
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <Skeleton className="aspect-square w-full rounded-lg" />
+                    </div>
+                    <div className="space-y-4">
+                        <Skeleton className="h-8 w-3/4" />
+                        <Skeleton className="h-5 w-1/2" />
                         <Skeleton className="h-24 w-full" />
                         <Skeleton className="h-10 w-48" />
-                    </CardContent>
-                </Card>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -104,7 +103,7 @@ export default function PartDetailPage() {
             <div className="flex flex-col items-center justify-center h-full text-center p-8">
                 <h2 className="text-2xl font-bold">Part Not Found</h2>
                 <p className="text-muted-foreground mt-2 mb-4">
-                    The part you are looking for does not exist.
+                    The part you are looking for does not exist for this appliance.
                 </p>
                 <Button variant="outline" asChild>
                     <Link href={`/appliance/${applianceId}`}>
@@ -116,10 +115,26 @@ export default function PartDetailPage() {
         );
     }
 
+    const renderMarkdownList = (text: string) => {
+        return (
+            <ul className="list-disc list-outside space-y-2 pl-5">
+                {text.split('\n').map((line, index) => {
+                     // Remove markdown list characters like '*' or '-'
+                    const cleanLine = line.replace(/^[\s*-]+\s*/, '');
+                    if (cleanLine) {
+                        return <li key={index}>{cleanLine}</li>;
+                    }
+                    return null;
+                })}
+            </ul>
+        )
+    }
+
+
     return (
         <div className="p-4 md:p-6">
-            <div className="mb-4">
-                <Button variant="outline" size="sm" asChild>
+            <div className="mb-6">
+                <Button variant="outline" asChild>
                     <Link href={`/appliance/${applianceId}`}>
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to {appliance.name}
@@ -127,26 +142,53 @@ export default function PartDetailPage() {
                 </Button>
             </div>
             
-            <header className="mb-6">
-                <h1 className="text-3xl font-bold">{partDetails.partName}</h1>
-                <p className="text-muted-foreground">For {appliance.brand} {appliance.model}</p>
-            </header>
+            <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
+                <div className="md:sticky md:top-24 h-max">
+                     <div className="relative aspect-square w-full">
+                       <Image 
+                         src="https://placehold.co/600x600.png"
+                         alt={partDetails.partName}
+                         fill
+                         className="rounded-lg object-cover border"
+                         data-ai-hint="appliance part"
+                       />
+                     </div>
+                </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Part Details</CardTitle>
-                    <CardDescription>
-                        Information about the selected replacement part.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="prose prose-sm max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: partDetails.description.replace(/\n/g, '<br />') }} />
+                <div className="space-y-6">
+                    <div>
+                        <h1 className="text-3xl lg:text-4xl font-bold">{partDetails.partName}</h1>
+                        <p className="text-muted-foreground mt-1">For {appliance.brand} {appliance.model}</p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <Card>
+                            <CardHeader className="pb-2">
+                               <CardTitle className="text-lg flex items-center gap-2"><Info className="h-5 w-5"/> Part Description</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-muted-foreground">{partDetails.description}</p>
+                            </CardContent>
+                        </Card>
+                         <Card>
+                            <CardHeader className="pb-2">
+                               <CardTitle className="text-lg flex items-center gap-2"><AlertTriangle className="h-5 w-5"/> Common Failure Symptoms</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-muted-foreground text-sm">
+                                {renderMarkdownList(partDetails.failureSymptoms)}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <Separator />
                     
                     <div>
-                        <Button asChild>
+                        <Button asChild size="lg" className="w-full sm:w-auto">
                             <a href={partDetails.purchaseUrl} target="_blank" rel="noopener noreferrer">
-                                <ShoppingCart className="mr-2 h-4 w-4" />
-                                Buy Now
+                                <ShoppingCart className="mr-2 h-5 w-5" />
+                                Find at Online Store
                                 <ExternalLink className="ml-2 h-4 w-4" />
                             </a>
                         </Button>
@@ -155,8 +197,8 @@ export default function PartDetailPage() {
                         </p>
                     </div>
 
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         </div>
     );
 }

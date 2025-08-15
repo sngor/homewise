@@ -19,8 +19,9 @@ export type GetPartDetailsInput = z.infer<typeof GetPartDetailsInputSchema>;
 
 const GetPartDetailsOutputSchema = z.object({
   partName: z.string().describe('The name of the part.'),
-  description: z.string().describe('A detailed description of the part, its function, and common symptoms of failure. Formatted as Markdown.'),
-  purchaseUrl: z.string().describe('A fictional URL to a product page where the user could purchase this part.'),
+  description: z.string().describe('A detailed, one-paragraph description of the part and its function.'),
+  failureSymptoms: z.string().describe('A markdown-formatted, bulleted list of 3-5 common symptoms of failure. Each symptom should be on its own line.'),
+  purchaseUrl: z.string().describe("A fictional URL to a product page where the user could purchase this part."),
 });
 export type GetPartDetailsOutput = z.infer<typeof GetPartDetailsOutputSchema>;
 
@@ -36,8 +37,9 @@ const prompt = ai.definePrompt({
 
 Provide the following information:
 1.  **partName**: The name of the part.
-2.  **description**: A detailed description of the part. Explain its function within the appliance and list some common symptoms that might indicate this part is failing. Format this as Markdown.
-3.  **purchaseUrl**: A fictional, but realistic-looking, 'example.com' URL for a product page where the user could purchase this specific part. For instance, 'https://parts.example.com/{{{applianceModel}}}/{{{partName}}}'.
+2.  **description**: A detailed, one-paragraph description of the part and its primary function within the appliance.
+3.  **failureSymptoms**: A markdown-formatted list of 3-5 common symptoms that indicate this part might be failing. Each symptom must be on a new line and start with a bullet point (*).
+4.  **purchaseUrl**: A fictional, but realistic-looking, 'example.com' URL for a product page where the user could purchase this specific part. For instance, 'https://parts.example.com/{{{applianceModel}}}/{{{partName}}}'.
 `,
 });
 
