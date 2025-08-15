@@ -234,7 +234,7 @@ export default function ApplianceDetailPage() {
           </Card>
         </TabsContent>
         <TabsContent value="parts" className="mt-4">
-          <PartFinder model={appliance.model} brand={appliance.brand} />
+          <PartFinder model={appliance.model} brand={appliance.brand} type={appliance.type} />
         </TabsContent>
         <TabsContent value="maintenance" className="mt-4">
             <div className="grid gap-4 md:grid-cols-2">

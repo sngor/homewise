@@ -13,9 +13,10 @@ import { useParams } from "next/navigation";
 type PartFinderProps = {
   brand: string;
   model: string;
+  type: string;
 };
 
-export function PartFinder({ brand, model }: PartFinderProps) {
+export function PartFinder({ brand, model, type }: PartFinderProps) {
   const [parts, setParts] = useState<Part[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +29,7 @@ export function PartFinder({ brand, model }: PartFinderProps) {
     setParts([]);
     
     try {
-      const result = await getCompatibleParts({ applianceBrand: brand, applianceModel: model });
+      const result = await getCompatibleParts({ applianceBrand: brand, applianceModel: model, applianceType: type });
 
       if (result.parts && result.parts.length > 0) {
         setParts(result.parts);
