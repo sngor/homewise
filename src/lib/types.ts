@@ -9,4 +9,5 @@ export interface Appliance {
   installationDate: string;
   stickerImageUrl?: string;
   maintenanceSchedule: string;
+  manualUrl?: string;
 }

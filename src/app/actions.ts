@@ -25,6 +25,11 @@ import {
   type GetPartDetailsInput,
   type GetPartDetailsOutput,
 } from '@/ai/flows/get-part-details';
+import {
+  findManualUrl,
+  type FindManualUrlInput,
+  type FindManualUrlOutput,
+} from '@/ai/flows/find-manual-url';
 
 export async function getCompatibleParts(
   input: FindCompatiblePartsInput
@@ -103,5 +108,21 @@ export async function getSinglePartDetails(
       throw new Error(`AI part detail finder failed: ${error.message}`);
     }
     throw new Error('An unknown error occurred while getting part details.');
+  }
+}
+
+
+export async function getManualUrl(
+  input: FindManualUrlInput
+): Promise<FindManualUrlOutput> {
+  try {
+    const result = await findManualUrl(input);
+    return result;
+  } catch (error) {
+    console.error('Error finding manual URL:', error);
+    if (error instanceof Error) {
+      throw new Error(`AI manual finder failed: ${error.message}`);
+    }
+    throw new Error('An unknown error occurred while finding the manual.');
   }
 }

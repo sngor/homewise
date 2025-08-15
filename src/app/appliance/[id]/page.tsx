@@ -6,7 +6,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { getApplianceById, deleteAppliance } from '@/lib/data';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Calendar, Wrench, Info, HardHat, Phone, Loader2, Trash2, LocateFixed, Building, MapPin } from 'lucide-react';
+import { ArrowLeft, Calendar, Wrench, Info, HardHat, Phone, Loader2, Trash2, LocateFixed, Building, MapPin, BookUser, ExternalLink } from 'lucide-react';
 import type { Appliance } from '@/lib/types';
 import { getRepairServices } from '@/app/actions';
 import type { FindRepairServicesOutput } from '@/ai/flows/find-repair-services';
@@ -205,8 +205,17 @@ export default function ApplianceDetailPage() {
         </TabsList>
         <TabsContent value="details" className="mt-4">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Appliance Information</CardTitle>
+              {appliance.manualUrl && (
+                <Button variant="outline" asChild>
+                    <a href={appliance.manualUrl} target="_blank" rel="noopener noreferrer">
+                        <BookUser className="mr-2 h-4 w-4" />
+                        View Manual
+                        <ExternalLink className="ml-2 h-4 w-4" />
+                    </a>
+                </Button>
+              )}
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4 text-sm">

@@ -36,7 +36,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import type { Appliance } from "@/lib/types"
-import { getApplianceDetailsFromImage, getMaintenanceScedule } from "@/app/actions"
+import { getApplianceDetailsFromImage, getMaintenanceScedule, getManualUrl } from "@/app/actions"
 import { useToast } from "@/hooks/use-toast"
 
 const formSchema = z.object({
@@ -52,6 +52,7 @@ const formSchema = z.object({
     required_error: "An installation date is required.",
   }),
   maintenanceSchedule: z.string().min(2, "Maintenance schedule is required."),
+  manualUrl: z.string().url().optional().or(z.literal('')),
 })
 
 type AddApplianceSheetProps = {
@@ -64,6 +65,7 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
   const [stickerFile, setStickerFile] = useState<File | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
+  const [isFindingManual, setIsFindingManual] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -76,6 +78,7 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
       purchaseDate: new Date(),
       installationDate: new Date(),
       maintenanceSchedule: "",
+      manualUrl: "",
     },
   })
   
@@ -104,6 +107,33 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
       }
   };
 
+  const handleFindManual = async (applianceBrand: string, applianceModel: string) => {
+    if (!applianceBrand || !applianceModel) {
+        return;
+    }
+
+    setIsFindingManual(true);
+    try {
+        const result = await getManualUrl({ applianceBrand, applianceModel });
+        if (result.manualUrl) {
+            form.setValue("manualUrl", result.manualUrl);
+            toast({
+                title: "Manual Found",
+                description: "An online user manual has been linked.",
+            });
+        }
+    } catch (e) {
+        const error = e instanceof Error ? e.message : "Could not find a manual.";
+        toast({
+            variant: "destructive",
+            title: "Manual Search Failed",
+            description: error,
+        });
+    } finally {
+        setIsFindingManual(false);
+    }
+  };
+
 
   const handleExtractDetails = async (file: File) => {
     if (!file) return;
@@ -125,8 +155,12 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
                 title: "Details Extracted",
                 description: "Appliance details have been filled in from the image.",
             });
-            // Automatically suggest schedule after extracting details
-            await handleSuggestSchedule(result.type, result.model);
+            // Automatically run subsequent AI tasks
+            await Promise.all([
+              handleSuggestSchedule(result.type, result.model),
+              handleFindManual(result.brand, result.model)
+            ]);
+            
         } catch(e) {
              const error = e instanceof Error ? e.message : "Could not extract details from the image. Please enter them manually.";
              toast({
@@ -169,6 +203,8 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
     setStickerFile(null);
   }
 
+  const isLoadingAi = isExtracting || isSuggesting || isFindingManual;
+
   return (
     <Sheet open={open} onOpenChange={(isOpen) => {
         onOpenChange(isOpen);
@@ -200,11 +236,15 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
               <FormDescription>Upload a picture of the appliance sticker. Information will be extracted automatically.</FormDescription>
             </FormItem>
 
-            {(isExtracting || isSuggesting) && (
+            {isLoadingAi && (
               <div className="space-y-2 rounded-md border p-4 bg-secondary/50 flex items-center gap-3">
                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
                  <div>
-                    <p className="font-medium text-foreground">{isExtracting ? "Extracting details from image..." : "Suggesting maintenance schedule..."}</p>
+                    <p className="font-medium text-foreground">
+                        {isExtracting ? "Reading appliance sticker..." :
+                         isSuggesting ? "Generating maintenance schedule..." :
+                         "Searching for user manual..."}
+                    </p>
                     <p className="text-sm text-muted-foreground">Please wait a moment.</p>
                  </div>
               </div>
@@ -391,8 +431,25 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="manualUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Manual URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://manual.example.com" {...field} />
+                    </FormControl>
+                    <FormDescription>Link to the online user manual. This is auto-suggested.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <Button type="submit" className="w-full">Save Appliance</Button>
+            <Button type="submit" className="w-full" disabled={isLoadingAi}>
+              {isLoadingAi ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Save Appliance
+            </Button>
           </form>
         </Form>
       </SheetContent>
