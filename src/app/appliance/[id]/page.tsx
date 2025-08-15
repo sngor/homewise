@@ -1,9 +1,12 @@
+
+"use client";
+
+import { useState, useEffect } from 'react';
 import { getApplianceById } from '@/lib/data';
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Calendar, Wrench, Info, HardHat, Phone } from 'lucide-react';
-import { Metadata } from 'next';
+import { ArrowLeft, Calendar, Wrench, Info, HardHat, Phone, Loader2 } from 'lucide-react';
+import type { Appliance } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,24 +16,69 @@ import { ApplianceIcon } from '@/components/appliance-icon';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { MaintenanceCard } from '@/components/maintenance-card';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// This is a server component, so we can fetch data directly.
-// However, since we are using local state for now, we'll fetch on the client
-// in a real app with a db, we'd use this commented-out function.
-// export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-//   const appliance = await getApplianceById(params.id);
-//   if (!appliance) {
-//     return { title: 'Appliance Not Found' };
-//   }
-//   return { title: `${appliance.name} Details` };
-// }
+export default function ApplianceDetailPage({ params }: { params: { id: string } }) {
+  const [appliance, setAppliance] = useState<Appliance | null | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
 
-export default async function ApplianceDetailPage({ params }: { params: { id: string } }) {
-  const appliance = await getApplianceById(params.id);
+  useEffect(() => {
+    const fetchAppliance = async () => {
+      setIsLoading(true);
+      const fetchedAppliance = await getApplianceById(params.id);
+      setAppliance(fetchedAppliance);
+      setIsLoading(false);
+    };
 
-  if (!appliance) {
-    notFound();
+    fetchAppliance();
+  }, [params.id]);
+
+
+  if (isLoading || appliance === undefined) {
+    return (
+        <div className="p-4 md:p-6 animate-pulse">
+            <div className="mb-4">
+                <Skeleton className="h-10 w-40" />
+            </div>
+            <header className="mb-6">
+                <div className="flex items-center gap-4">
+                    <Skeleton className="h-14 w-14 rounded-lg" />
+                    <div className="flex-1 space-y-2">
+                        <Skeleton className="h-8 w-1/2" />
+                        <Skeleton className="h-5 w-24" />
+                    </div>
+                </div>
+            </header>
+            <Skeleton className="h-10 w-full mb-4" />
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-7 w-48" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-40 w-full" />
+                </CardContent>
+            </Card>
+        </div>
+    );
   }
+
+  if (appliance === null) {
+    return (
+        <div className="flex flex-col items-center justify-center h-full text-center p-8">
+            <h2 className="text-2xl font-bold">Appliance Not Found</h2>
+            <p className="text-muted-foreground mt-2 mb-4">
+                The appliance you are looking for does not exist.
+            </p>
+            <Button variant="outline" asChild>
+                <Link href="/">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Inventory
+                </Link>
+            </Button>
+        </div>
+    );
+  }
+
 
   const detailItems = [
     { label: "Model Number", value: appliance.model },
@@ -139,3 +187,5 @@ export default async function ApplianceDetailPage({ params }: { params: { id: st
     </div>
   );
 }
+
+    

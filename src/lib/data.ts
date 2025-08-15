@@ -1,3 +1,4 @@
+
 import type { Appliance } from './types';
 
 // Using an in-memory array to simulate a database for local session storage.
@@ -41,10 +42,11 @@ export const getAppliances = async (): Promise<Appliance[]> => {
     return [...MOCK_APPLIANCES].sort((a, b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime());
 }
 
-export const getApplianceById = async (id: string): Promise<Appliance | undefined> => {
+export const getApplianceById = async (id: string): Promise<Appliance | null> => {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 200));
-    return MOCK_APPLIANCES.find(app => app.id === id);
+    const appliance = MOCK_APPLIANCES.find(app => app.id === id);
+    return appliance || null;
 }
 
 export const addAppliance = async (applianceData: Omit<Appliance, 'id'>): Promise<Appliance> => {
@@ -64,3 +66,5 @@ export const deleteAppliance = async (id: string): Promise<void> => {
     MOCK_APPLIANCES = MOCK_APPLIANCES.filter(app => app.id !== id);
     return;
 };
+
+    
