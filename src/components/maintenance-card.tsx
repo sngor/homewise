@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import { Calendar, Check } from 'lucide-react';
+import { Calendar, Check, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Appliance } from '@/lib/types';
@@ -38,6 +38,7 @@ const calculateNextDueDate = (startDateStr: string, schedule: string): Date | nu
 
 export function MaintenanceCard({ appliance }: MaintenanceCardProps) {
     const [reminderSet, setReminderSet] = useState(false);
+    const [waterFilterReminderSet, setWaterFilterReminderSet] = useState(false);
 
     const nextDueDate = useMemo(() => {
         const startDate = appliance.installationDate || appliance.purchaseDate;
@@ -63,23 +64,45 @@ export function MaintenanceCard({ appliance }: MaintenanceCardProps) {
                             : "Could not determine next due date."}
                      </p>
                 </div>
-                <Button 
-                    onClick={() => setReminderSet(true)} 
-                    disabled={reminderSet || !nextDueDate}
-                    className="w-full sm:w-auto"
-                >
-                    {reminderSet ? (
-                        <>
-                            <Check className="mr-2 h-4 w-4"/>
-                            Reminder Set
-                        </>
-                    ) : (
-                        <>
-                            <Calendar className="mr-2 h-4 w-4"/>
-                            Set Reminder
-                        </>
+                <div className="flex flex-wrap gap-2">
+                    {appliance.type === 'refrigerator' && (
+                         <Button 
+                            onClick={() => setWaterFilterReminderSet(true)} 
+                            disabled={waterFilterReminderSet || !nextDueDate}
+                            className="w-full sm:w-auto"
+                            variant="secondary"
+                        >
+                            {waterFilterReminderSet ? (
+                                <>
+                                    <Check className="mr-2 h-4 w-4"/>
+                                    Water Filter Reminder Set
+                                </>
+                            ) : (
+                                <>
+                                    <Filter className="mr-2 h-4 w-4"/>
+                                    Set Water Filter Reminder
+                                </>
+                            )}
+                        </Button>
                     )}
-                </Button>
+                    <Button 
+                        onClick={() => setReminderSet(true)} 
+                        disabled={reminderSet || !nextDueDate}
+                        className="w-full sm:w-auto"
+                    >
+                        {reminderSet ? (
+                            <>
+                                <Check className="mr-2 h-4 w-4"/>
+                                Reminder Set
+                            </>
+                        ) : (
+                            <>
+                                <Calendar className="mr-2 h-4 w-4"/>
+                                Set Reminder
+                            </>
+                        )}
+                    </Button>
+                </div>
             </CardContent>
         </Card>
     );
