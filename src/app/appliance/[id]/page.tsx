@@ -6,7 +6,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { getApplianceById, deleteAppliance } from '@/lib/data';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Calendar, Wrench, Info, HardHat, Phone, Loader2, Trash2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Wrench, Info, HardHat, Phone, Loader2, Trash2, LocateFixed } from 'lucide-react';
 import type { Appliance } from '@/lib/types';
 import { getRepairServices } from '@/app/actions';
 
@@ -85,20 +85,35 @@ export default function ApplianceDetailPage() {
     }
   };
 
-  const handleFindServices = useCallback(async () => {
+  const handleFindServices = useCallback(() => {
     if (!appliance || repairServices.length > 0) return;
 
     setIsLoadingServices(true);
     setServiceError(null);
-    try {
-      const result = await getRepairServices({ applianceType: appliance.type });
-      setRepairServices(result.services);
-    } catch(e) {
-       const error = e instanceof Error ? e.message : "Could not find services.";
-       setServiceError(error);
-    } finally {
-      setIsLoadingServices(false);
-    }
+    setRepairServices([]);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const result = await getRepairServices({
+            applianceType: appliance.type,
+            latitude,
+            longitude,
+          });
+          setRepairServices(result.services);
+        } catch (e) {
+          const error = e instanceof Error ? e.message : "Could not find services.";
+          setServiceError(error);
+        } finally {
+          setIsLoadingServices(false);
+        }
+      },
+      (error) => {
+        setServiceError(`Geolocation error: ${error.message}. Please enable location services.`);
+        setIsLoadingServices(false);
+      }
+    );
   }, [appliance, repairServices]);
 
 
@@ -189,7 +204,7 @@ export default function ApplianceDetailPage() {
         <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto sm:h-10">
           <TabsTrigger value="details"><Info className="mr-2 h-4 w-4" />Details</TabsTrigger>
           <TabsTrigger value="parts"><Wrench className="mr-2 h-4 w-4" />Parts</TabsTrigger>
-          <TabsTrigger value="maintenance" onClick={handleFindServices}><Calendar className="mr-2 h-4 w-4" />Maintenance</TabsTrigger>
+          <TabsTrigger value="maintenance"><Calendar className="mr-2 h-4 w-4" />Maintenance</TabsTrigger>
         </TabsList>
         <TabsContent value="details" className="mt-4">
           <Card>
@@ -229,15 +244,18 @@ export default function ApplianceDetailPage() {
                 <MaintenanceCard appliance={appliance} />
                 <Card>
                     <CardHeader>
-                    <CardTitle>Nearby Repair Services</CardTitle>
+                        <CardTitle>Nearby Repair Services</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {isLoadingServices && (
-                            <div className="flex items-center justify-center">
-                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                <span>Finding services...</span>
-                            </div>
-                        )}
+                        <Button onClick={handleFindServices} disabled={isLoadingServices} className="w-full">
+                            {isLoadingServices ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <LocateFixed className="mr-2 h-4 w-4" />
+                            )}
+                            Find Services Near Me
+                        </Button>
+
                         {serviceError && (
                             <Alert variant="destructive">
                                 <Wrench className="h-4 w-4" />
@@ -245,6 +263,7 @@ export default function ApplianceDetailPage() {
                                 <AlertDescription>{serviceError}</AlertDescription>
                             </Alert>
                         )}
+
                         {!isLoadingServices && !serviceError && repairServices.length > 0 && (
                             <ul className="space-y-3">
                                 {repairServices.map(service => (
@@ -263,9 +282,10 @@ export default function ApplianceDetailPage() {
                                 ))}
                             </ul>
                         )}
-                         {!isLoadingServices && !serviceError && repairServices.length === 0 && (
-                             <p className="text-sm text-muted-foreground">Click the "Maintenance" tab again to search for services.</p>
-                         )}
+
+                        {!isLoadingServices && !serviceError && repairServices.length === 0 && (
+                            <p className="text-sm text-center text-muted-foreground pt-4">Click the button above to find repair services using your current location.</p>
+                        )}
                     </CardContent>
                 </Card>
             </div>
@@ -279,7 +299,7 @@ export default function ApplianceDetailPage() {
             <AlertDialogDescription>
             This action cannot be undone. This will permanently delete the
             appliance &quot;{appliance?.name}&quot;.
-            </AlertDialogDescription>
+            </被告Description>
         </AlertDialogHeader>
         <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>

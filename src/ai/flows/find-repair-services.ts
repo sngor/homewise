@@ -12,6 +12,8 @@ import {z} from 'genkit';
 
 const FindRepairServicesInputSchema = z.object({
   applianceType: z.string().describe('The type of the appliance (e.g., refrigerator, oven).'),
+  latitude: z.number().optional().describe('The latitude of the user\'s location.'),
+  longitude: z.number().optional().describe('The longitude of the user\'s location.'),
 });
 export type FindRepairServicesInput = z.infer<typeof FindRepairServicesInputSchema>;
 
@@ -37,6 +39,9 @@ const prompt = ai.definePrompt({
   input: {schema: FindRepairServicesInputSchema},
   output: {schema: FindRepairServicesOutputSchema},
   prompt: `You are an expert local service finder. A user needs to find repair services for their '{{{applianceType}}}'. 
+  {{#if latitude}}
+  The user is located at latitude: {{{latitude}}} and longitude: {{{longitude}}}. Please provide services that would be realistically near this location.
+  {{/if}}
   
   Please provide a list of 3 to 5 highly-rated, fictional appliance repair service companies that would service this type of appliance. For each service, provide a realistic name, a US-based phone number, and a user rating between 4.0 and 5.0.`,
 });
