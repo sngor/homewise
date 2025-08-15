@@ -11,6 +11,7 @@ export let MOCK_APPLIANCES: Appliance[] = [
         model: 'FFSS2615TS',
         serial: 'BA12345678',
         purchaseDate: '2022-01-15',
+        installationDate: '2022-01-20',
         maintenanceSchedule: 'Every 6 months',
         stickerImageUrl: 'https://placehold.co/600x400.png'
     },
@@ -22,6 +23,7 @@ export let MOCK_APPLIANCES: Appliance[] = [
         model: 'OLED55C1PUB',
         serial: 'SN98765432',
         purchaseDate: '2021-11-20',
+        installationDate: '2021-11-20',
         maintenanceSchedule: 'As needed',
         stickerImageUrl: 'https://placehold.co/600x400.png'
     },
@@ -33,6 +35,7 @@ export let MOCK_APPLIANCES: Appliance[] = [
         model: 'WM4000HWA',
         serial: 'WM55555555',
         purchaseDate: '2023-03-10',
+        installationDate: '2023-03-12',
         maintenanceSchedule: 'Every 3 months',
         stickerImageUrl: 'https://placehold.co/600x400.png'
     }

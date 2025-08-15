@@ -6,6 +6,7 @@ export interface Appliance {
   model: string;
   serial: string;
   purchaseDate: string;
+  installationDate: string;
   stickerImageUrl?: string;
   maintenanceSchedule: string;
 }

@@ -90,6 +90,7 @@ export default function ApplianceDetailPage() {
     { label: "Model Number", value: appliance.model },
     { label: "Serial Number", value: appliance.serial },
     { label: "Purchase Date", value: new Date(appliance.purchaseDate).toLocaleDateString() },
+    { label: "Installation Date", value: new Date(appliance.installationDate).toLocaleDateString() },
     { label: "Maintenance Schedule", value: appliance.maintenanceSchedule },
   ];
 

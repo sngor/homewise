@@ -11,20 +11,20 @@ interface MaintenanceCardProps {
     appliance: Appliance;
 }
 
-const calculateNextDueDate = (purchaseDateStr: string, schedule: string): Date | null => {
-    const purchaseDate = parseISO(purchaseDateStr);
+const calculateNextDueDate = (startDateStr: string, schedule: string): Date | null => {
+    const startDate = parseISO(startDateStr);
     const scheduleLower = schedule.toLowerCase();
     
     let monthsToAdd = 0;
     
     if (scheduleLower.includes("annually") || scheduleLower.includes("year")) {
-        return addYears(purchaseDate, 1);
+        return addYears(startDate, 1);
     }
 
     const monthMatch = scheduleLower.match(/every (\d+) months?/);
     if (monthMatch && monthMatch[1]) {
         monthsToAdd = parseInt(monthMatch[1], 10);
-        let nextDueDate = addMonths(purchaseDate, monthsToAdd);
+        let nextDueDate = addMonths(startDate, monthsToAdd);
         // If the next due date is in the past, keep adding the interval until it's in the future
         while (nextDueDate < new Date()) {
             nextDueDate = addMonths(nextDueDate, monthsToAdd);
@@ -39,9 +39,10 @@ const calculateNextDueDate = (purchaseDateStr: string, schedule: string): Date |
 export function MaintenanceCard({ appliance }: MaintenanceCardProps) {
     const [reminderSet, setReminderSet] = useState(false);
 
-    const nextDueDate = useMemo(() => 
-        calculateNextDueDate(appliance.purchaseDate, appliance.maintenanceSchedule),
-    [appliance.purchaseDate, appliance.maintenanceSchedule]);
+    const nextDueDate = useMemo(() => {
+        const startDate = appliance.installationDate || appliance.purchaseDate;
+        return calculateNextDueDate(startDate, appliance.maintenanceSchedule)
+    }, [appliance.installationDate, appliance.purchaseDate, appliance.maintenanceSchedule]);
 
 
     return (

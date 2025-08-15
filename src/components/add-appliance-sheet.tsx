@@ -48,6 +48,9 @@ const formSchema = z.object({
   purchaseDate: z.date({
     required_error: "A purchase date is required.",
   }),
+  installationDate: z.date({
+    required_error: "An installation date is required.",
+  }),
   maintenanceSchedule: z.string().min(2, "Maintenance schedule is required."),
 })
 
@@ -71,6 +74,7 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
       model: "",
       serial: "",
       purchaseDate: new Date(),
+      installationDate: new Date(),
       maintenanceSchedule: "",
     },
   })
@@ -130,6 +134,7 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
       ...values,
       type: values.type || 'other',
       purchaseDate: format(values.purchaseDate, "yyyy-MM-dd"),
+      installationDate: format(values.installationDate, "yyyy-MM-dd"),
       stickerImageUrl: stickerFile ? URL.createObjectURL(stickerFile) : undefined,
     });
     form.reset();
@@ -299,6 +304,48 @@ export function AddApplianceSheet({ open, onOpenChange, onApplianceAdded }: AddA
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Purchase Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        defaultMonth={field.value}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="installationDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Installation Date</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
