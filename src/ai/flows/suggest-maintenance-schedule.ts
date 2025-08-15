@@ -29,7 +29,9 @@ const prompt = ai.definePrompt({
   name: 'suggestMaintenanceSchedulePrompt',
   input: {schema: SuggestMaintenanceScheduleInputSchema},
   output: {schema: SuggestMaintenanceScheduleOutputSchema},
-  prompt: `You are an appliance maintenance expert. Based on the appliance type '{{{applianceType}}}' and model '{{{applianceModel}}}', suggest a concise maintenance schedule. For example, 'Every 6 months' or 'Annually'. Keep the response brief.`,
+  prompt: `You are an appliance maintenance expert. Based on the appliance type '{{{applianceType}}}' and model '{{{applianceModel}}}', suggest a concise maintenance schedule. For example, 'Every 6 months' or 'Annually'. Keep the response brief.
+
+If the appliance type is 'refrigerator', the maintenance schedule should specifically mention replacing the water filter, for example: "Replace water filter every 6 months".`,
 });
 
 const suggestMaintenanceScheduleFlow = ai.defineFlow(
