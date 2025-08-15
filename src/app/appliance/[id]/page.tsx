@@ -6,7 +6,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { getApplianceById, deleteAppliance } from '@/lib/data';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Calendar, Wrench, Info, HardHat, Phone, Loader2, Trash2, LocateFixed } from 'lucide-react';
+import { ArrowLeft, Calendar, Wrench, Info, HardHat, Phone, Loader2, Trash2, LocateFixed, Building } from 'lucide-react';
 import type { Appliance } from '@/lib/types';
 import { getRepairServices } from '@/app/actions';
 import type { FindRepairServicesOutput } from '@/ai/flows/find-repair-services';
@@ -262,22 +262,24 @@ export default function ApplianceDetailPage() {
                         )}
 
                         {!isLoadingServices && !serviceError && repairServices.length > 0 && (
-                            <ul className="space-y-3">
+                            <div className="space-y-4">
                                 {repairServices.map(service => (
-                                    <li key={service.name} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-2 rounded-md hover:bg-secondary/50">
-                                        <div className="flex items-center gap-3">
-                                            <HardHat className="h-5 w-5 text-muted-foreground flex-shrink-0"/>
+                                    <div key={service.name} className="flex items-center justify-between gap-4 p-4 border rounded-lg">
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-3 bg-secondary rounded-md">
+                                                <Building className="h-6 w-6 text-muted-foreground"/>
+                                            </div>
                                             <div>
-                                                <p className="font-medium">{service.name}</p>
-                                                <p className="text-xs text-muted-foreground">Rating: {service.rating.toFixed(1)} / 5</p>
+                                                <p className="font-semibold">{service.name}</p>
+                                                <p className="text-sm text-muted-foreground">Rating: {service.rating.toFixed(1)} / 5</p>
                                             </div>
                                         </div>
-                                        <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
+                                        <Button variant="outline" size="sm" asChild>
                                             <a href={`tel:${service.phone}`}><Phone className="mr-2 h-3 w-3" /> Call</a>
                                         </Button>
-                                    </li>
+                                    </div>
                                 ))}
-                            </ul>
+                            </div>
                         )}
 
                         {!isLoadingServices && !serviceError && repairServices.length === 0 && (
@@ -309,3 +311,5 @@ export default function ApplianceDetailPage() {
     </>
   );
 }
+
+    
