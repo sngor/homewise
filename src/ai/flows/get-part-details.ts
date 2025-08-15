@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI flow to get details for a specific appliance part.
@@ -10,13 +11,13 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const GetPartDetailsInputSchema = z.object({
+const GetPartDetailsInputSchema = z.object({
   partName: z.string().describe('The name of the appliance part.'),
   applianceModel: z.string().describe('The model of the appliance the part belongs to.'),
 });
 export type GetPartDetailsInput = z.infer<typeof GetPartDetailsInputSchema>;
 
-export const GetPartDetailsOutputSchema = z.object({
+const GetPartDetailsOutputSchema = z.object({
   partName: z.string().describe('The name of the part.'),
   description: z.string().describe('A detailed description of the part, its function, and common symptoms of failure. Formatted as Markdown.'),
   purchaseUrl: z.string().url().describe('A fictional URL to a product page where the user could purchase this part.'),
