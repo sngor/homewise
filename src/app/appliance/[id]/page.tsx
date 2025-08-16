@@ -6,7 +6,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { getApplianceById, deleteAppliance } from '@/lib/data';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Calendar, Wrench, Info, HardHat, Phone, Loader2, Trash2, LocateFixed, Building, MapPin, BookUser, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Calendar, Wrench, Info, HardHat, Phone, Loader2, Trash2, LocateFixed, Building, MapPin, BookUser, ExternalLink, AreaChart } from 'lucide-react';
 import type { Appliance } from '@/lib/types';
 import { getRepairServices } from '@/app/actions';
 import type { FindRepairServicesOutput } from '@/ai/flows/find-repair-services';
@@ -32,6 +32,9 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { DocumentUploader } from '@/components/document-uploader';
+import { RepairGuideGenerator } from '@/components/repair-guide-generator';
+import { EnergyTracker } from '@/components/energy-tracker';
 
 type RepairService = FindRepairServicesOutput['services'][0];
 
@@ -164,8 +167,6 @@ export default function ApplianceDetailPage() {
     { label: "Brand", value: appliance.brand },
     { label: "Model Number", value: appliance.model },
     { label: "Serial Number", value: appliance.serial },
-    { label: "Purchase Date", value: new Date(appliance.purchaseDate).toLocaleDateString() },
-    { label: "Installation Date", value: new Date(appliance.installationDate).toLocaleDateString() },
     { label: "Maintenance Schedule", value: appliance.maintenanceSchedule },
   ];
 
@@ -198,10 +199,11 @@ export default function ApplianceDetailPage() {
       </header>
 
       <Tabs defaultValue="details" className="w-full">
-        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto sm:h-10">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto sm:h-10">
           <TabsTrigger value="details"><Info className="mr-2 h-4 w-4" />Details</TabsTrigger>
           <TabsTrigger value="parts"><Wrench className="mr-2 h-4 w-4" />Parts</TabsTrigger>
           <TabsTrigger value="maintenance"><Calendar className="mr-2 h-4 w-4" />Maintenance</TabsTrigger>
+          <TabsTrigger value="energy"><AreaChart className="mr-2 h-4 w-4" />Energy</TabsTrigger>
         </TabsList>
         <TabsContent value="details" className="mt-4">
           <Card>
@@ -226,6 +228,58 @@ export default function ApplianceDetailPage() {
                   </div>
                 ))}
               </div>
+              <Separator className="my-4" />
+              <div className="space-y-2">
+                <h4 className="font-medium text-muted-foreground">Key Dates</h4>
+                <div className="grid md:grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                    <div className="grid grid-cols-[150px_1fr] sm:grid-cols-2 gap-2 p-2 rounded-md hover:bg-secondary/50 items-center">
+                        <dt className="font-medium text-muted-foreground">Purchase Date</dt>
+                        <dd className="break-words">{new Date(appliance.purchaseDate).toLocaleDateString()}</dd>
+                    </div>
+                    <div className="grid grid-cols-[150px_1fr] sm:grid-cols-2 gap-2 p-2 rounded-md hover:bg-secondary/50 items-center">
+                        <dt className="font-medium text-muted-foreground">Installation Date</dt>
+                        <dd className="break-words">{new Date(appliance.installationDate).toLocaleDateString()}</dd>
+                    </div>
+                    <div className="grid grid-cols-[150px_1fr] sm:grid-cols-2 gap-2 p-2 rounded-md hover:bg-secondary/50 items-center">
+                        <dt className="font-medium text-muted-foreground">Warranty Expiration</dt>
+                        <dd className="break-words">{appliance.warrantyEndDate ? new Date(appliance.warrantyEndDate).toLocaleDateString() : 'N/A'}</dd>
+                    </div>
+                </div>
+              </div>
+              <Separator className="my-4" />
+              <div className="space-y-2">
+                <h4 className="font-medium text-muted-foreground">Documents</h4>
+                <div className="flex flex-wrap gap-4 pt-2">
+                    {appliance.receiptUrl ? (
+                        <Button variant="outline" asChild>
+                            <a href={appliance.receiptUrl} target="_blank" rel="noopener noreferrer">
+                                View Receipt
+                                <ExternalLink className="ml-2 h-4 w-4" />
+                            </a>
+                        </Button>
+                    ) : (
+                        <DocumentUploader
+                            applianceId={appliance.id}
+                            documentType="receipt"
+                            onUploadComplete={() => {}}
+                        />
+                    )}
+                    {appliance.warrantyUrl ? (
+                        <Button variant="outline" asChild>
+                            <a href={appliance.warrantyUrl} target="_blank" rel="noopener noreferrer">
+                                View Warranty
+                                <ExternalLink className="ml-2 h-4 w-4" />
+                            </a>
+                        </Button>
+                    ) : (
+                        <DocumentUploader
+                            applianceId={appliance.id}
+                            documentType="warranty"
+                            onUploadComplete={() => {}}
+                        />
+                    )}
+                </div>
+              </div>
                <Separator/>
                <div className="space-y-2">
                  <h4 className="font-medium">Appliance Sticker</h4>
@@ -246,10 +300,12 @@ export default function ApplianceDetailPage() {
           <PartFinder model={appliance.model} brand={appliance.brand} type={appliance.type} />
         </TabsContent>
         <TabsContent value="maintenance" className="mt-4">
-            <div className="grid gap-4 md:grid-cols-2">
-                <MaintenanceCard appliance={appliance} />
-                <Card>
-                    <CardHeader>
+            <div className="space-y-6">
+                <RepairGuideGenerator applianceType={appliance.type} applianceModel={appliance.model} />
+                <div className="grid gap-4 md:grid-cols-2">
+                    <MaintenanceCard appliance={appliance} />
+                    <Card>
+                        <CardHeader>
                         <CardTitle>Nearby Repair Services</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -300,7 +356,11 @@ export default function ApplianceDetailPage() {
                         )}
                     </CardContent>
                 </Card>
+                </div>
             </div>
+        </TabsContent>
+        <TabsContent value="energy" className="mt-4">
+            <EnergyTracker appliance={appliance} />
         </TabsContent>
       </Tabs>
     </div>

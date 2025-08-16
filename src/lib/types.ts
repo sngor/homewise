@@ -10,4 +10,13 @@ export interface Appliance {
   stickerImageUrl?: string;
   maintenanceSchedule: string;
   manualUrl?: string;
+  receiptUrl?: string;
+  warrantyUrl?: string;
+  warrantyEndDate?: string;
+  energyReadings?: EnergyReading[];
+}
+
+export interface EnergyReading {
+    date: string;
+    consumption: number; // in kWh
 }
