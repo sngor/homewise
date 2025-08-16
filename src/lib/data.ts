@@ -64,3 +64,13 @@ export const deleteAppliance = async (id: string): Promise<void> => {
         throw new Error("Appliance not found");
     }
 };
+
+export const updateAppliance = async (id: string, data: Partial<Omit<Appliance, 'id'>>): Promise<Appliance> => {
+    await sleep(400);
+    const index = appliances.findIndex(a => a.id === id);
+    if (index === -1) {
+        throw new Error("Appliance not found");
+    }
+    appliances[index] = { ...appliances[index], ...data };
+    return { ...appliances[index] };
+};
