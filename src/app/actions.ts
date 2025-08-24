@@ -30,6 +30,28 @@ import {
   type FindManualUrlInput,
   type FindManualUrlOutput,
 } from '@/ai/flows/find-manual-url';
+import {
+  estimateEnergyConsumption,
+  type EstimateEnergyConsumptionInput,
+  type EstimateEnergyConsumptionOutput,
+} from '@/ai/flows/estimate-energy-consumption';
+
+export async function getEnergyInsights(
+  input: EstimateEnergyConsumptionInput
+): Promise<EstimateEnergyConsumptionOutput> {
+  try {
+    const result = await estimateEnergyConsumption(input);
+    return result;
+  } catch (error) {
+    console.error('Error estimating energy consumption:', error);
+    if (error instanceof Error) {
+      throw new Error(`AI energy estimator failed: ${error.message}`);
+    }
+    throw new Error(
+      'An unknown error occurred while estimating energy consumption.'
+    );
+  }
+}
 
 export async function getCompatibleParts(
   input: FindCompatiblePartsInput
