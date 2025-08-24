@@ -20,3 +20,13 @@ export interface EnergyReading {
     date: string;
     consumption: number; // in kWh
 }
+
+export interface EnergyInsight {
+  estimatedAnnualKwh: number;
+  estimatedAnnualCost: number;
+  tips: {
+    title: string;
+    description: string;
+  }[];
+  sources: string[];
+}
